@@ -273,7 +273,7 @@ function ChartCard({
           {series.map((s) => (
             <div key={s.label} className="text-right">
               <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
-                {series.length > 1 ? s.label : 'today'}
+                {series.length > 1 ? s.label : 'yesterday'}
               </p>
               <p className="tabular text-[20px] font-semibold text-[#f5f5f7]">
                 {money ? usd(lastOf(s.points)?.value ?? 0) : fmtInt(lastOf(s.points)?.value ?? 0)}

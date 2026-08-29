@@ -50,7 +50,8 @@ function dayKey(iso: string): string {
 function lastNDays(n: number): string[] {
   const out: string[] = [];
   const now = new Date();
-  for (let i = n - 1; i >= 0; i--) {
+  // Closed days only — skip UTC today so the last point is not an incomplete day.
+  for (let i = n; i >= 1; i--) {
     const d = new Date(now);
     d.setUTCDate(d.getUTCDate() - i);
     out.push(d.toISOString().slice(0, 10));
