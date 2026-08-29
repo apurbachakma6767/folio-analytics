@@ -1,6 +1,5 @@
 import {
   getNetwork,
-  getOperatorId,
   getUsdcTokenId,
   getVaultEvm,
   getVaultId,
@@ -96,18 +95,13 @@ export async function loadDashboard(): Promise<DashboardData> {
       fetchAccountTokens(vaultId).catch(() => [] as Array<{ token_id: string; balance: number }>),
     ]);
 
-  const operatorId = getOperatorId();
-
-  function party(accountId: string, name?: string, email?: string) {
-    if (accountId === vaultId) return { email: '', name: 'Vault', accountId };
-    if (operatorId && accountId === operatorId) return { email: '', name: 'Operator', accountId };
-    return { email: email || '', name: name || '', accountId };
-  }
   const walletByAccount = new Map(wallets.map((w) => [w.accountId, w]));
   const walletByEvm = new Map(wallets.map((w) => [w.evm.toLowerCase(), w]));
   const equityByToken = new Map(equities.map((e) => [e.tokenId, e]));
   const knownAccounts = new Set(wallets.map((w) => w.accountId));
   knownAccounts.add(vaultId);
+
+  const party = (accountId: string) => ({ accountId });
 
   const spendByTx = new Map<string, (typeof notes)[number]>();
   const repayByTx = new Map<string, (typeof notes)[number]>();
@@ -198,7 +192,7 @@ export async function loadDashboard(): Promise<DashboardData> {
       kinds: [...new Set(kinds)],
       method,
       user: user
-        ? party(user.accountId, user.name, user.email)
+        ? party(user.accountId)
         : cr.from
           ? party(`0.0.${parseInt(cr.from.replace(/^0x/i, ''), 16)}`)
           : null,
@@ -269,9 +263,9 @@ export async function loadDashboard(): Promise<DashboardData> {
       kinds: [...new Set(kinds)],
       method: t.name === 'CONTRACTCALL' ? 'call' : null,
       user: user
-        ? party(user.accountId, user.name, user.email)
+        ? party(user.accountId)
         : note
-          ? party(note.userAccountId, note.recipient)
+          ? party(note.userAccountId)
           : null,
       symbol: note?.symbol || eqMeta?.symbol || null,
       amountLabel,
@@ -292,7 +286,7 @@ export async function loadDashboard(): Promise<DashboardData> {
     const from = (cr.from || '').toLowerCase();
     if (!from || from === vaultEvm) continue;
     const user = walletByEvm.get(from);
-    const key = user?.email || from;
+    const key = user?.accountId || from;
     const t = new Date(tsToIso(cr.timestamp || '')).getTime();
     if (t >= cutoff30) mauSets.d30.add(key);
     if (t >= cutoff14) mauSets.d14.add(key);

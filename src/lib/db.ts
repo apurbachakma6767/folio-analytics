@@ -16,14 +16,12 @@ export function getSupabase(): SupabaseClient {
 export async function loadWallets(): Promise<WalletUser[]> {
   const { data, error } = await getSupabase()
     .from('users')
-    .select('email,name,hedera_account_id,created_at')
+    .select('hedera_account_id,created_at')
     .neq('hedera_account_id', '');
   if (error) throw error;
   return (data || [])
     .filter((u) => typeof u.hedera_account_id === 'string' && u.hedera_account_id.startsWith('0.0.'))
     .map((u) => ({
-      email: String(u.email || '').toLowerCase(),
-      name: String(u.name || ''),
       accountId: String(u.hedera_account_id),
       evm: accountToEvm(String(u.hedera_account_id)),
       createdAt: String(u.created_at || ''),
@@ -33,7 +31,7 @@ export async function loadWallets(): Promise<WalletUser[]> {
 export async function loadUserCounts(): Promise<{ total: number }> {
   const { count: total, error } = await getSupabase()
     .from('users')
-    .select('email', { count: 'exact', head: true });
+    .select('hedera_account_id', { count: 'exact', head: true });
   if (error) throw error;
   return { total: total ?? 0 };
 }
@@ -42,7 +40,7 @@ export async function loadSpendNotes(): Promise<SpendRow[]> {
   const { data, error } = await getSupabase()
     .from('spend_notes')
     .select(
-      'id,symbol,amount,shares,status,tx_id,settlement_tx_id,user_account_id,recipient,created_at,settled_at,expiry_date'
+      'id,symbol,amount,shares,status,tx_id,settlement_tx_id,user_account_id,created_at,settled_at,expiry_date'
     )
     .order('created_at', { ascending: false })
     .limit(2000);
@@ -56,7 +54,6 @@ export async function loadSpendNotes(): Promise<SpendRow[]> {
     txId: String(r.tx_id || ''),
     settlementTxId: r.settlement_tx_id ? String(r.settlement_tx_id) : null,
     userAccountId: String(r.user_account_id || ''),
-    recipient: String(r.recipient || ''),
     createdAt: String(r.created_at || ''),
     settledAt: r.settled_at ? String(r.settled_at) : null,
     expiryDate: String(r.expiry_date || ''),

@@ -3,8 +3,6 @@ export type TxKind = 'contract' | 'spend' | 'repay' | 'collateral';
 export type TxTab = 'all' | TxKind;
 
 export interface WalletUser {
-  email: string;
-  name: string;
   accountId: string;
   evm: string;
   createdAt: string;
@@ -33,7 +31,6 @@ export interface SpendRow {
   txId: string;
   settlementTxId: string | null;
   userAccountId: string;
-  recipient: string;
   createdAt: string;
   settledAt: string | null;
   expiryDate: string;
@@ -47,7 +44,7 @@ export interface ClassifiedTx {
   result: string;
   kinds: TxKind[];
   method: string | null;
-  user: { email: string; name: string; accountId: string } | null;
+  user: { accountId: string } | null;
   symbol: string | null;
   amountLabel: string | null;
   explorerUrl: string;
