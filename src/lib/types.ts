@@ -7,7 +7,6 @@ export interface WalletUser {
   name: string;
   accountId: string;
   evm: string;
-  isSimulation: boolean;
   createdAt: string;
 }
 
@@ -68,7 +67,6 @@ export interface DashboardData {
   users: {
     total: number;
     withWallet: number;
-    simulation: number;
   };
   notes: {
     active: number;
@@ -83,6 +81,7 @@ export interface DashboardData {
     series: DayPoint[];
   };
   spendSeries: DayPoint[];
+  repaySeries: DayPoint[];
   collateral: CollateralSlice[];
   txs: ClassifiedTx[];
   counts: Record<TxTab, number>;

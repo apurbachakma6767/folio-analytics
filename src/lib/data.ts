@@ -302,9 +302,14 @@ export async function loadDashboard(): Promise<DashboardData> {
   }
 
   const spendByDay: Record<string, number> = {};
+  const repayByDay: Record<string, number> = {};
   for (const n of notes) {
-    const day = dayKey(n.createdAt);
-    spendByDay[day] = (spendByDay[day] || 0) + n.amount;
+    const spendDay = dayKey(n.createdAt);
+    spendByDay[spendDay] = (spendByDay[spendDay] || 0) + n.amount;
+    if (n.settledAt || n.status === 'repaid' || n.status === 'settled') {
+      const repayDay = dayKey(n.settledAt || n.createdAt);
+      repayByDay[repayDay] = (repayByDay[repayDay] || 0) + n.amount;
+    }
   }
 
   const collateral: CollateralSlice[] = vaultTokens
@@ -341,7 +346,6 @@ export async function loadDashboard(): Promise<DashboardData> {
     users: {
       total: counts.total,
       withWallet: wallets.length,
-      simulation: counts.simulation,
     },
     notes: {
       active: active.length,
@@ -359,6 +363,7 @@ export async function loadDashboard(): Promise<DashboardData> {
       })),
     },
     spendSeries: fillSeries(WINDOW_DAYS, spendByDay),
+    repaySeries: fillSeries(WINDOW_DAYS, repayByDay),
     collateral,
     txs: classified.slice(0, 500),
     counts: countsByTab,

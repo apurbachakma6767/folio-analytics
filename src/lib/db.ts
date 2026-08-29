@@ -16,7 +16,7 @@ export function getSupabase(): SupabaseClient {
 export async function loadWallets(): Promise<WalletUser[]> {
   const { data, error } = await getSupabase()
     .from('users')
-    .select('email,name,hedera_account_id,created_at,is_simulation')
+    .select('email,name,hedera_account_id,created_at')
     .neq('hedera_account_id', '');
   if (error) throw error;
   return (data || [])
@@ -26,21 +26,16 @@ export async function loadWallets(): Promise<WalletUser[]> {
       name: String(u.name || ''),
       accountId: String(u.hedera_account_id),
       evm: accountToEvm(String(u.hedera_account_id)),
-      isSimulation: u.is_simulation === true,
       createdAt: String(u.created_at || ''),
     }));
 }
 
-export async function loadUserCounts(): Promise<{ total: number; simulation: number }> {
-  const sb = getSupabase();
-  const { count: total, error: e1 } = await sb.from('users').select('email', { count: 'exact', head: true });
-  if (e1) throw e1;
-  const { count: simulation, error: e2 } = await sb
+export async function loadUserCounts(): Promise<{ total: number }> {
+  const { count: total, error } = await getSupabase()
     .from('users')
-    .select('email', { count: 'exact', head: true })
-    .eq('is_simulation', true);
-  if (e2) throw e2;
-  return { total: total ?? 0, simulation: simulation ?? 0 };
+    .select('email', { count: 'exact', head: true });
+  if (error) throw error;
+  return { total: total ?? 0 };
 }
 
 export async function loadSpendNotes(): Promise<SpendRow[]> {

@@ -86,7 +86,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           <Stat
             label="Wallets"
             value={fmtInt(data.users.withWallet)}
-            hint={`${data.users.simulation} sim · ${data.users.total} users`}
+            hint={`${fmtInt(data.users.total)} registered`}
           />
         </section>
 
@@ -94,14 +94,15 @@ export function Dashboard({ data }: { data: DashboardData }) {
           <ChartCard
             title="Contract MAU"
             caption="Unique vault callers per day (deposit / release)"
-            series={data.mau.series}
-            color="#10b981"
+            series={[{ label: 'MAU', color: '#10b981', points: data.mau.series }]}
           />
           <ChartCard
             title="Spend volume"
-            caption="USDC advanced per day (from spend notes)"
-            series={data.spendSeries}
-            color="#3b82f6"
+            caption="USDC advanced and repaid per day"
+            series={[
+              { label: 'Advanced', color: '#3b82f6', points: data.spendSeries },
+              { label: 'Repaid', color: '#10b981', points: data.repaySeries },
+            ]}
             money
           />
         </section>
@@ -231,51 +232,80 @@ function ChartCard({
   title,
   caption,
   series,
-  color,
   money,
 }: {
   title: string;
   caption: string;
-  series: DayPoint[];
-  color: string;
+  series: { label: string; color: string; points: DayPoint[] }[];
   money?: boolean;
 }) {
-  const max = Math.max(1, ...series.map((s) => s.value));
+  const days = series[0]?.points ?? [];
+  const max = Math.max(1, ...series.flatMap((s) => s.points.map((p) => p.value)));
   const w = 640;
   const h = 160;
   const pad = 8;
-  const pts = series.map((s, i) => {
-    const x = pad + (i / Math.max(1, series.length - 1)) * (w - pad * 2);
-    const y = h - pad - (s.value / max) * (h - pad * 2);
-    return `${x},${y}`;
-  });
-  const area = `${pad},${h - pad} ${pts.join(' ')} ${w - pad},${h - pad}`;
-  const last = series[series.length - 1];
+  const toPts = (points: DayPoint[]) =>
+    points.map((s, i) => {
+      const x = pad + (i / Math.max(1, points.length - 1)) * (w - pad * 2);
+      const y = h - pad - (s.value / max) * (h - pad * 2);
+      return `${x},${y}`;
+    });
+  const lastOf = (points: DayPoint[]) => points[points.length - 1];
+
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5">
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-[20px] font-semibold text-[#f5f5f7]">{title}</h3>
           <p className="mt-1 text-[13px] text-[#71717a]">{caption}</p>
+          {series.length > 1 ? (
+            <ul className="mt-3 flex flex-wrap gap-4">
+              {series.map((s) => (
+                <li key={s.label} className="flex items-center gap-2 text-[12px] text-[#a1a1aa]">
+                  <i className="inline-block h-2 w-2 rounded-full" style={{ background: s.color }} />
+                  {s.label}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
-        <p className="tabular text-[20px] font-semibold text-[#f5f5f7]">
-          {money ? usd(last?.value ?? 0) : fmtInt(last?.value ?? 0)}
-          <span className="ml-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
-            today
-          </span>
-        </p>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          {series.map((s) => (
+            <div key={s.label} className="text-right">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
+                {series.length > 1 ? s.label : 'today'}
+              </p>
+              <p className="tabular text-[20px] font-semibold text-[#f5f5f7]">
+                {money ? usd(lastOf(s.points)?.value ?? 0) : fmtInt(lastOf(s.points)?.value ?? 0)}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="mt-4 h-40 w-full" role="img">
-        <polyline fill={`${color}22`} stroke="none" points={area} />
-        <polyline
-          fill="none"
-          stroke={color}
-          strokeWidth="2.5"
-          points={pts.join(' ')}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
+        {series.map((s) => {
+          const pts = toPts(s.points);
+          const area = `${pad},${h - pad} ${pts.join(' ')} ${w - pad},${h - pad}`;
+          return (
+            <g key={s.label}>
+              <polyline fill={`${s.color}22`} stroke="none" points={area} />
+              <polyline
+                fill="none"
+                stroke={s.color}
+                strokeWidth="2.5"
+                points={pts.join(' ')}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            </g>
+          );
+        })}
       </svg>
+      {days.length ? (
+        <p className="mt-2 text-[11px] uppercase tracking-[0.06em] text-[#71717a]">
+          {days[0]?.day} – {days[days.length - 1]?.day}
+        </p>
+      ) : null}
     </div>
   );
 }
