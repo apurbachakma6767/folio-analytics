@@ -25,6 +25,6 @@ Required in `.env.local`:
 - `USDC_TOKEN_ID`
 - `HEDERA_OPERATOR_ID` (optional, labels operator rows)
 
-The dashboard unions successful user `deposit()` CONTRACTCALLs across **both** vaults. Qualified MAU = unique wallets with ≥2 deposits in 30 days. Single-deposit wallets are shown separately.
+The dashboard unions successful user vault CONTRACTCALLs across **both** vaults (operator excluded). MAU is unique wallets in 30 days, shown as 1 call vs ≥2 calls.
 
 Do not expose this on a public URL without auth — the service role can read the user table.

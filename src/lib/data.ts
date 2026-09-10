@@ -316,7 +316,7 @@ export async function loadDashboard(): Promise<DashboardData> {
 
   const mauSets = { d7: new Set<string>(), d14: new Set<string>(), d30: new Set<string>() };
   const mauByDay: Record<string, Set<string>> = {};
-  const depositCount30 = new Map<string, number>();
+  const interactionCount30 = new Map<string, number>();
   const cutoff7 = Date.now() - 7 * 86400_000;
   const cutoff14 = Date.now() - 14 * 86400_000;
   const cutoff30 = Date.now() - 30 * 86400_000;
@@ -329,13 +329,12 @@ export async function loadDashboard(): Promise<DashboardData> {
 
   for (const cr of contractResults) {
     if (cr.error_message) continue;
-    if (selectorOf(cr.function_parameters) !== DEPOSIT_SELECTOR) continue;
     const key = callerKey(cr.from || '');
     if (!key) continue;
     const t = new Date(tsToIso(cr.timestamp || '')).getTime();
     if (t >= cutoff30) {
       mauSets.d30.add(key);
-      depositCount30.set(key, (depositCount30.get(key) || 0) + 1);
+      interactionCount30.set(key, (interactionCount30.get(key) || 0) + 1);
     }
     if (t >= cutoff14) mauSets.d14.add(key);
     if (t >= cutoff7) mauSets.d7.add(key);
@@ -471,8 +470,8 @@ export async function loadDashboard(): Promise<DashboardData> {
       d7: mauSets.d7.size,
       d14: mauSets.d14.size,
       d30: mauSets.d30.size,
-      qualified30: [...depositCount30.values()].filter((n) => n >= 2).length,
-      single30: [...depositCount30.values()].filter((n) => n === 1).length,
+      qualified30: [...interactionCount30.values()].filter((n) => n >= 2).length,
+      single30: [...interactionCount30.values()].filter((n) => n === 1).length,
       series: windowDays.map((day) => ({
         day,
         value: mauByDay[day]?.size ?? 0,
