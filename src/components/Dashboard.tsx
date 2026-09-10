@@ -63,9 +63,9 @@ export function Dashboard({ data }: { data: DashboardData }) {
           <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[#a1a1aa]">
             Unique users are wallets with a successful user <span className="text-[#f5f5f7]">deposit()</span>{' '}
             CONTRACTCALL on <span className="text-[#f5f5f7]">either</span> vault in the trailing{' '}
-            {data.window.days} days ({win}). Qualified MAU requires ≥2 deposits in that combined
-            window. Operator calls are excluded. Use HashScan <span className="text-[#f5f5f7]">/contract/</span>,
-            never /account/.
+            {data.window.days} days ({win}). MAU is split by 1 deposit vs ≥2 deposits. Operator
+            calls are excluded. Use HashScan <span className="text-[#f5f5f7]">/contract/</span>, never
+            /account/.
           </p>
         </div>
       </header>
@@ -112,23 +112,37 @@ export function Dashboard({ data }: { data: DashboardData }) {
           <CollateralTray slices={data.collateral} total={totalShares} />
         </section>
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat
-            label="Qualified MAU"
-            value={fmtInt(data.mau.qualified30)}
-            hint="≥2 user deposits / 30d · both vaults"
-            accent
-          />
-          <Stat
-            label="Single deposit"
-            value={fmtInt(data.mau.single30)}
-            hint="exactly 1 deposit · not in qualified MAU"
-          />
-          <Stat
-            label="≥1 deposit"
-            value={fmtInt(data.mau.d30)}
-            hint={`7d ${fmtInt(data.mau.d7)} · 14d ${fmtInt(data.mau.d14)}`}
-          />
+        <section className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.32)] md:col-span-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#71717a]">
+              MAU 30d · both vaults
+            </p>
+            <p className="mt-1 text-[12px] text-[#71717a]">
+              Unique wallets with a successful user deposit() · 7d {fmtInt(data.mau.d7)} · 14d{' '}
+              {fmtInt(data.mau.d14)}
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-6">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
+                  ≥2 deposits
+                </p>
+                <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#10b981]">
+                  {fmtInt(data.mau.qualified30)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
+                  1 deposit
+                </p>
+                <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#f5f5f7]">
+                  {fmtInt(data.mau.single30)}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-[12px] text-[#71717a]">
+              {fmtInt(data.mau.d30)} unique in 30d
+            </p>
+          </div>
           <Stat
             label="Solidity release()"
             value={fmtInt(data.notes.solidityReleaseSuccess30)}
@@ -136,34 +150,10 @@ export function Dashboard({ data }: { data: DashboardData }) {
           />
         </section>
 
-        <section className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#71717a]">
-            Spend mix · last {data.window.days}d notes
-          </p>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {data.spendBands.map((b) => (
-              <li key={b.label}>
-                <div className="flex items-baseline justify-between gap-3 text-[13px]">
-                  <span className="text-[#a1a1aa]">{b.label}</span>
-                  <span className="tabular text-[#f5f5f7]">
-                    {b.count} · {b.pct.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
-                  <div
-                    className="h-full rounded-full bg-[#10b981]"
-                    style={{ width: `${Math.min(100, b.pct)}%` }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-
         <section className="grid gap-6 md:grid-cols-2">
           <ChartCard
             title="Daily unique depositors"
-            caption="Successful user deposit() per day, both vaults, operator excluded. Headline qualified MAU is ≥2 deposits in 30d, not this series."
+            caption="Successful user deposit() per day, both vaults, operator excluded."
             series={[{ label: 'Depositors', color: '#10b981', points: data.mau.series }]}
           />
           <ChartCard
@@ -217,9 +207,9 @@ export function Dashboard({ data }: { data: DashboardData }) {
           <TxTable rows={rows} />
           <p className="mt-3 text-[12px] text-[#71717a]">
             Ledger {rows.length}/{data.counts[tab]} · snapshot {data.fetchedAt} · window {win}.
-            Qualified MAU is unique wallets with ≥2 successful user deposits across both vaults.
-            Single-deposit wallets are shown separately and are not in that count. {fmtInt(data.users.withWallet)}{' '}
-            registered wallets in DB are not MAU.
+            MAU is unique wallets with a successful user deposit across both vaults, shown as ≥2
+            deposits and 1 deposit. {fmtInt(data.users.withWallet)} registered wallets in DB are not
+            MAU.
           </p>
         </section>
       </main>
