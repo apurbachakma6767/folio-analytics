@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Folio vault analytics',
-  description: 'Collateral, spends, repayments, and contract MAU from Hedera Mirror + Folio DB.',
+  description: 'Collateral, spends, repayments, and contract MAU across live and previous Folio vaults.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

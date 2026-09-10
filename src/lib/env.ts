@@ -22,6 +22,15 @@ export function getHashscanBase(): string {
     : 'https://hashscan.io/testnet';
 }
 
+export type VaultRole = 'live' | 'previous';
+
+export interface VaultRef {
+  id: string;
+  evm: string;
+  explorer: string;
+  role: VaultRole;
+}
+
 export function getVaultId(): string {
   const id = process.env.FOLIO_VAULT_CONTRACT_ID?.trim();
   if (!id) throw new Error('FOLIO_VAULT_CONTRACT_ID is required');
@@ -30,6 +39,40 @@ export function getVaultId(): string {
 
 export function getVaultEvm(): string {
   return (process.env.FOLIO_VAULT_EVM_ADDRESS || accountToEvm(getVaultId())).toLowerCase();
+}
+
+export function getPreviousVaultId(): string | null {
+  const id = process.env.FOLIO_VAULT_PREVIOUS_CONTRACT_ID?.trim();
+  return id && id !== getVaultId() ? id : null;
+}
+
+export function getLiveVault(): VaultRef {
+  const id = getVaultId();
+  return {
+    id,
+    evm: getVaultEvm(),
+    explorer: hashscanContract(id),
+    role: 'live',
+  };
+}
+
+export function getPreviousVault(): VaultRef | null {
+  const id = getPreviousVaultId();
+  if (!id) return null;
+  const evm = (
+    process.env.FOLIO_VAULT_PREVIOUS_EVM_ADDRESS || accountToEvm(id)
+  ).toLowerCase();
+  return { id, evm, explorer: hashscanContract(id), role: 'previous' };
+}
+
+export function getAllVaults(): VaultRef[] {
+  const live = getLiveVault();
+  const prev = getPreviousVault();
+  return prev ? [prev, live] : [live];
+}
+
+export function getVaultCutoverDate(): string | null {
+  return process.env.FOLIO_VAULT_CUTOVER_DATE?.trim() || null;
 }
 
 export function getOperatorId(): string {

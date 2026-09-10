@@ -1,10 +1,13 @@
 import {
+  getAllVaults,
   getNetwork,
+  getOperatorId,
   getUsdcTokenId,
-  getVaultEvm,
-  getVaultId,
+  getVaultCutoverDate,
+  getPreviousVaultId,
   hashscanContract,
   hashscanTx,
+  accountToEvm,
 } from './env';
 import { loadEquityTokens, loadSpendNotes, loadUserCounts, loadWallets } from './db';
 import {
@@ -17,11 +20,13 @@ import {
 } from './mirror';
 import {
   DEPOSIT_SELECTOR,
+  RELEASE_SELECTOR,
   type ClassifiedTx,
   type CollateralSlice,
   type DashboardData,
   type DayPoint,
   type TxKind,
+  type VaultBook,
   type WalletUser,
 } from './types';
 
@@ -70,7 +75,7 @@ function selectorOf(params?: string | null): string {
 
 function methodLabel(sel: string): string | null {
   if (sel === DEPOSIT_SELECTOR) return 'deposit';
-  if (sel === '07b67758' || sel === '1e83409a') return 'release';
+  if (sel === RELEASE_SELECTOR || sel === '07b67758' || sel === '1e83409a') return 'release';
   return sel ? `0x${sel}` : null;
 }
 
@@ -79,27 +84,45 @@ function fillSeries(days: number, hits: Record<string, number>): DayPoint[] {
 }
 
 export async function loadDashboard(): Promise<DashboardData> {
-  const vaultId = getVaultId();
-  const vaultEvm = getVaultEvm();
+  const vaults = getAllVaults();
+  const live = vaults.find((v) => v.role === 'live')!;
+  const vaultId = live.id;
+  const vaultEvm = live.evm;
+  const vaultIds = new Set(vaults.map((v) => v.id));
+  const vaultEvms = new Set(vaults.map((v) => v.evm.toLowerCase()));
+  const operatorId = getOperatorId();
+  const operatorEvm = operatorId ? accountToEvm(operatorId).toLowerCase() : '';
   const usdc = getUsdcTokenId();
   const since = daysAgoSec(WINDOW_DAYS);
 
-  const [wallets, counts, notes, equities, contractResults, vaultTxs, vaultTokens] =
-    await Promise.all([
-      loadWallets(),
-      loadUserCounts(),
-      loadSpendNotes(),
-      loadEquityTokens(),
-      fetchAllContractResults(vaultId, since).catch(() => [] as MirrorContractResult[]),
-      fetchAccountTransactions(vaultId, since).catch(() => [] as MirrorTx[]),
-      fetchAccountTokens(vaultId).catch(() => [] as Array<{ token_id: string; balance: number }>),
-    ]);
+  const [wallets, counts, notes, equities, ...perVault] = await Promise.all([
+    loadWallets(),
+    loadUserCounts(),
+    loadSpendNotes(),
+    loadEquityTokens(),
+    ...vaults.flatMap((v) => [
+      fetchAllContractResults(v.id, since).catch(() => [] as MirrorContractResult[]),
+      fetchAccountTransactions(v.id, since).catch(() => [] as MirrorTx[]),
+    ]),
+    fetchAccountTokens(vaultId).catch(() => [] as Array<{ token_id: string; balance: number }>),
+  ]);
+
+  const vaultTokens = perVault.pop() as Array<{ token_id: string; balance: number }>;
+  const contractResults: Array<MirrorContractResult & { vaultId: string; vaultRole: VaultBook['role'] }> =
+    [];
+  const vaultTxs: MirrorTx[] = [];
+  vaults.forEach((v, i) => {
+    const results = (perVault[i * 2] || []) as MirrorContractResult[];
+    const txs = (perVault[i * 2 + 1] || []) as MirrorTx[];
+    for (const cr of results) contractResults.push({ ...cr, vaultId: v.id, vaultRole: v.role });
+    vaultTxs.push(...txs);
+  });
 
   const walletByAccount = new Map(wallets.map((w) => [w.accountId, w]));
   const walletByEvm = new Map(wallets.map((w) => [w.evm.toLowerCase(), w]));
   const equityByToken = new Map(equities.map((e) => [e.tokenId, e]));
   const knownAccounts = new Set(wallets.map((w) => w.accountId));
-  knownAccounts.add(vaultId);
+  for (const v of vaults) knownAccounts.add(v.id);
 
   const party = (accountId: string) => ({ accountId });
 
@@ -111,7 +134,10 @@ export async function loadDashboard(): Promise<DashboardData> {
   }
 
   const missingIds = [...spendByTx.keys(), ...repayByTx.keys()].filter(
-    (id) => id && !vaultTxs.some((t) => normalizeTxId(t.transaction_id) === id)
+    (id) =>
+      id &&
+      !id.startsWith('repay-sim') &&
+      !vaultTxs.some((t) => normalizeTxId(t.transaction_id) === id)
   );
   const extra = (
     await Promise.all(missingIds.slice(0, 80).map((id) => fetchTransaction(id)))
@@ -137,7 +163,7 @@ export async function loadDashboard(): Promise<DashboardData> {
       if (w2) return w2;
     }
     for (const a of opts.accounts || []) {
-      if (a === vaultId) continue;
+      if (vaultIds.has(a)) continue;
       const w = walletByAccount.get(a);
       if (w) return w;
     }
@@ -160,6 +186,8 @@ export async function loadDashboard(): Promise<DashboardData> {
       if (!existing.symbol && row.symbol) existing.symbol = row.symbol;
       if (!existing.amountLabel && row.amountLabel) existing.amountLabel = row.amountLabel;
       if (row.name === 'CONTRACTCALL') existing.name = 'CONTRACTCALL';
+      if (!existing.vaultId && row.vaultId) existing.vaultId = row.vaultId;
+      if (!existing.vaultRole && row.vaultRole) existing.vaultRole = row.vaultRole;
       return;
     }
     classified.push(row);
@@ -169,8 +197,8 @@ export async function loadDashboard(): Promise<DashboardData> {
     const sel = selectorOf(cr.function_parameters);
     const method = methodLabel(sel);
     const kinds: TxKind[] = ['contract'];
-    if (method === 'deposit') kinds.push('spend');
-    if (method === 'release') kinds.push('repay');
+    if (method === 'deposit' && !cr.error_message) kinds.push('spend');
+    if (method === 'release' && !cr.error_message) kinds.push('repay');
     const user = resolveUser({ evm: cr.from });
     const matchedSpend = user
       ? notes.find(
@@ -191,6 +219,8 @@ export async function loadDashboard(): Promise<DashboardData> {
       result: cr.error_message ? 'REVERT' : 'SUCCESS',
       kinds: [...new Set(kinds)],
       method,
+      vaultId: cr.vaultId,
+      vaultRole: cr.vaultRole,
       user: user
         ? party(user.accountId)
         : cr.from
@@ -215,8 +245,13 @@ export async function loadDashboard(): Promise<DashboardData> {
 
     const tokens = t.token_transfers || [];
     const equityMoves = tokens.filter((x) => equityByToken.has(x.token_id));
-    const involvesVault = tokens.some((x) => x.account === vaultId) || t.name === 'CONTRACTCALL';
-    if (equityMoves.length && involvesVault) kinds.push('collateral');
+    const involvesVault =
+      tokens.some((x) => vaultIds.has(x.account)) || t.name === 'CONTRACTCALL';
+    if (equityMoves.length && involvesVault) {
+      const vaultEq = equityMoves.find((x) => vaultIds.has(x.account));
+      if (vaultEq && vaultEq.amount < 0) kinds.push('repay');
+      else kinds.push('collateral');
+    }
     if (t.name === 'CONTRACTCALL') kinds.push('contract');
 
     if (kinds.length === 0) {
@@ -224,7 +259,7 @@ export async function loadDashboard(): Promise<DashboardData> {
         ...(t.transfers || []).map((x) => x.account),
         ...tokens.map((x) => x.account),
       ];
-      const known = accounts.some((a) => a !== vaultId && knownAccounts.has(a));
+      const known = accounts.some((a) => !vaultIds.has(a) && knownAccounts.has(a));
       if (!known && !involvesVault) continue;
       if (t.name === 'CONTRACTCALL') kinds.push('contract');
       else if (equityMoves.length) kinds.push('collateral');
@@ -241,7 +276,7 @@ export async function loadDashboard(): Promise<DashboardData> {
         fallbackAccount: spend?.userAccountId || repay?.userAccountId,
       }) || null;
 
-    const eq = equityMoves.find((x) => x.account === vaultId) || equityMoves[0];
+    const eq = equityMoves.find((x) => vaultIds.has(x.account)) || equityMoves[0];
     const eqMeta = eq ? equityByToken.get(eq.token_id) : undefined;
     const decimals = eqMeta?.decimals ?? 6;
     const shares = eq ? Math.abs(eq.amount) / 10 ** decimals : 0;
@@ -253,6 +288,8 @@ export async function loadDashboard(): Promise<DashboardData> {
         : usdc && tokens.some((x) => x.token_id === usdc)
           ? 'USDC'
           : null;
+    const hitVaultId = tokens.map((x) => x.account).find((a) => vaultIds.has(a)) || null;
+    const hitVault = vaults.find((v) => v.id === hitVaultId) || null;
 
     pushTx({
       id: nid,
@@ -262,6 +299,8 @@ export async function loadDashboard(): Promise<DashboardData> {
       result: t.result,
       kinds: [...new Set(kinds)],
       method: t.name === 'CONTRACTCALL' ? 'call' : null,
+      vaultId: hitVaultId,
+      vaultRole: hitVault?.role ?? null,
       user: user
         ? party(user.accountId)
         : note
@@ -277,18 +316,27 @@ export async function loadDashboard(): Promise<DashboardData> {
 
   const mauSets = { d7: new Set<string>(), d14: new Set<string>(), d30: new Set<string>() };
   const mauByDay: Record<string, Set<string>> = {};
+  const depositCount30 = new Map<string, number>();
   const cutoff7 = Date.now() - 7 * 86400_000;
   const cutoff14 = Date.now() - 14 * 86400_000;
   const cutoff30 = Date.now() - 30 * 86400_000;
 
+  function callerKey(from: string): string | null {
+    const f = from.toLowerCase();
+    if (!f || vaultEvms.has(f) || (operatorEvm && f === operatorEvm)) return null;
+    return walletByEvm.get(f)?.accountId || f;
+  }
+
   for (const cr of contractResults) {
     if (cr.error_message) continue;
-    const from = (cr.from || '').toLowerCase();
-    if (!from || from === vaultEvm) continue;
-    const user = walletByEvm.get(from);
-    const key = user?.accountId || from;
+    if (selectorOf(cr.function_parameters) !== DEPOSIT_SELECTOR) continue;
+    const key = callerKey(cr.from || '');
+    if (!key) continue;
     const t = new Date(tsToIso(cr.timestamp || '')).getTime();
-    if (t >= cutoff30) mauSets.d30.add(key);
+    if (t >= cutoff30) {
+      mauSets.d30.add(key);
+      depositCount30.set(key, (depositCount30.get(key) || 0) + 1);
+    }
     if (t >= cutoff14) mauSets.d14.add(key);
     if (t >= cutoff7) mauSets.d7.add(key);
     const day = dayKey(tsToIso(cr.timestamp || ''));
@@ -296,8 +344,64 @@ export async function loadDashboard(): Promise<DashboardData> {
     mauByDay[day]!.add(key);
   }
 
+  const vaultBooks: VaultBook[] = vaults.map((v) => {
+    const rows = contractResults.filter((cr) => cr.vaultId === v.id);
+    const depositorKeys = new Set<string>();
+    let deposits30 = 0;
+    let releasesSuccess30 = 0;
+    let releasesFailed30 = 0;
+    for (const cr of rows) {
+      const t = new Date(tsToIso(cr.timestamp || '')).getTime();
+      if (t < cutoff30) continue;
+      const sel = selectorOf(cr.function_parameters);
+      const ok = !cr.error_message;
+      if (sel === DEPOSIT_SELECTOR && ok) {
+        const key = callerKey(cr.from || '');
+        if (!key) continue;
+        deposits30++;
+        depositorKeys.add(key);
+      }
+      if (sel === RELEASE_SELECTOR) {
+        if (ok) releasesSuccess30++;
+        else releasesFailed30++;
+      }
+    }
+    return {
+      id: v.id,
+      evm: v.evm,
+      explorer: v.explorer,
+      role: v.role,
+      deposits30,
+      uniqueDepositors30: depositorKeys.size,
+      releasesSuccess30,
+      releasesFailed30,
+    };
+  });
+
+  const solidityReleaseSuccess30 = vaultBooks.reduce((s, v) => s + v.releasesSuccess30, 0);
+
+  const windowDays = lastNDays(WINDOW_DAYS);
+  const windowStart = `${windowDays[0] || ''}T00:00:00.000Z`;
+  const windowEnd = `${windowDays[windowDays.length - 1] || ''}T23:59:59.999Z`;
+
   const spendByDay: Record<string, number> = {};
   const repayByDay: Record<string, number> = {};
+  const recentNotes = notes.filter((n) => new Date(n.createdAt).getTime() >= cutoff30);
+  const bandDefs: Array<{ label: string; pred: (n: number) => boolean }> = [
+    { label: '$5.00–10.00', pred: (n) => n >= 5 && n <= 10 },
+    { label: '$10.01–14.99', pred: (n) => n > 10 && n < 15 },
+    { label: '$15.00–24.99', pred: (n) => n >= 15 && n < 25 },
+    { label: '$25.00+', pred: (n) => n >= 25 },
+  ];
+  const spendBands = bandDefs.map((b) => {
+    const count = recentNotes.filter((n) => b.pred(n.amount)).length;
+    return {
+      label: b.label,
+      count,
+      pct: recentNotes.length ? (100 * count) / recentNotes.length : 0,
+    };
+  });
+
   for (const n of notes) {
     const spendDay = dayKey(n.createdAt);
     spendByDay[spendDay] = (spendByDay[spendDay] || 0) + n.amount;
@@ -306,6 +410,16 @@ export async function loadDashboard(): Promise<DashboardData> {
       repayByDay[repayDay] = (repayByDay[repayDay] || 0) + n.amount;
     }
   }
+
+  const repayChainByDay: Record<string, number> = {};
+  for (const t of classified) {
+    if (!t.kinds.includes('repay') || t.result !== 'SUCCESS') continue;
+    const day = dayKey(t.at);
+    repayChainByDay[day] = (repayChainByDay[day] || 0) + 1;
+  }
+  const onChainRepayTxs = classified.filter(
+    (t) => t.kinds.includes('repay') && t.result === 'SUCCESS'
+  ).length;
 
   const collateral: CollateralSlice[] = vaultTokens
     .map((t) => {
@@ -337,6 +451,9 @@ export async function loadDashboard(): Promise<DashboardData> {
     vaultId,
     vaultEvm,
     vaultExplorer: hashscanContract(vaultId),
+    previousVaultId: getPreviousVaultId(),
+    vaults: vaultBooks,
+    cutoverDate: getVaultCutoverDate(),
     fetchedAt: new Date().toISOString(),
     users: {
       total: counts.total,
@@ -347,18 +464,29 @@ export async function loadDashboard(): Promise<DashboardData> {
       repaid: repaid.length,
       outstandingUsdc: active.reduce((s, n) => s + n.amount, 0),
       advancedUsdc: notes.reduce((s, n) => s + n.amount, 0),
+      onChainRepayTxs,
+      solidityReleaseSuccess30,
     },
     mau: {
       d7: mauSets.d7.size,
       d14: mauSets.d14.size,
       d30: mauSets.d30.size,
-      series: lastNDays(WINDOW_DAYS).map((day) => ({
+      qualified30: [...depositCount30.values()].filter((n) => n >= 2).length,
+      single30: [...depositCount30.values()].filter((n) => n === 1).length,
+      series: windowDays.map((day) => ({
         day,
         value: mauByDay[day]?.size ?? 0,
       })),
     },
+    window: {
+      start: windowStart,
+      end: windowEnd,
+      days: WINDOW_DAYS,
+    },
+    spendBands,
     spendSeries: fillSeries(WINDOW_DAYS, spendByDay),
     repaySeries: fillSeries(WINDOW_DAYS, repayByDay),
+    repayChainSeries: fillSeries(WINDOW_DAYS, repayChainByDay),
     collateral,
     txs: classified.slice(0, 500),
     counts: countsByTab,

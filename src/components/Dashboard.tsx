@@ -31,6 +31,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
         tx.id,
         tx.name,
         tx.method,
+        tx.vaultId,
         tx.user?.accountId,
         tx.symbol,
         tx.amountLabel,
@@ -44,66 +45,135 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
   const totalShares = data.collateral.reduce((s, c) => s + c.shares, 0);
 
+  const snap = new Date(data.fetchedAt).toISOString().replace('T', ' ').slice(0, 19);
+  const win = `${data.window.start.slice(0, 10)} → ${data.window.end.slice(0, 10)} UTC`;
+  const previous = data.vaults.find((v) => v.role === 'previous');
+  const live = data.vaults.find((v) => v.role === 'live');
+
   return (
     <div className="min-h-screen">
       <header className="border-b border-white/[0.06]">
-        <div className="mx-auto flex max-w-[1200px] items-end justify-between gap-6 px-6 py-8">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#71717a]">
-              Folio · {data.network}
-            </p>
-            <h1 className="mt-1 text-[28px] font-bold tracking-[-0.01em] text-[#f5f5f7]">
-              Vault analytics
-            </h1>
-            <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-[#a1a1aa]">
-              Stock collateral locked in the vault, 0% advances out, repayments back.
-              Wallets from the Folio database; transactions from Hedera Mirror Node.
-            </p>
-          </div>
-          <a
-            href={data.vaultExplorer}
-            target="_blank"
-            rel="noreferrer"
-            className="mb-1 shrink-0 rounded-full border border-white/[0.08] bg-[#161618] px-4 py-2 font-mono text-[12px] text-[#a1a1aa] transition hover:border-[#10b981]/40 hover:text-[#f5f5f7]"
-          >
-            Vault {data.vaultId} ↗
-          </a>
+        <div className="mx-auto max-w-[1200px] px-6 py-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#71717a]">
+            Folio · {data.network} · snapshot {snap} UTC
+          </p>
+          <h1 className="mt-1 text-[28px] font-bold tracking-[-0.01em] text-[#f5f5f7]">
+            Vault analytics
+          </h1>
+          <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[#a1a1aa]">
+            Unique users are wallets with a successful user <span className="text-[#f5f5f7]">deposit()</span>{' '}
+            CONTRACTCALL on <span className="text-[#f5f5f7]">either</span> vault in the trailing{' '}
+            {data.window.days} days ({win}). Qualified MAU requires ≥2 deposits in that combined
+            window. Operator calls are excluded. Use HashScan <span className="text-[#f5f5f7]">/contract/</span>,
+            never /account/.
+          </p>
         </div>
       </header>
 
       <main className="mx-auto max-w-[1200px] space-y-10 px-6 py-10">
+        {previous && live ? (
+          <section className="rounded-2xl border border-[#f59e0b]/25 bg-[#f59e0b]/[0.06] p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#f59e0b]">
+              Vault redeployed{data.cutoverDate ? ` · ${data.cutoverDate}` : ''}
+            </p>
+            <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-[#f5f5f7]">
+              Hedera cannot replace contract bytecode. The first vault stored the operator as the
+              account-number address, so ECDSA <span className="font-mono text-[13px]">release()</span>{' '}
+              reverted. Live vault {live.id} was deployed with the ECDSA operator address. Collateral
+              moved over. Every successful user deposit on {previous.id} still counts in the 30-day
+              totals below — history is not reset.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <VaultCard book={previous} />
+              <VaultCard book={live} />
+            </div>
+          </section>
+        ) : live ? (
+          <section className="flex justify-end">
+            <a
+              href={live.explorer}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-white/[0.08] bg-[#161618] px-4 py-2 font-mono text-[12px] text-[#a1a1aa] transition hover:border-[#10b981]/40 hover:text-[#f5f5f7]"
+            >
+              Vault {live.id} ↗
+            </a>
+          </section>
+        ) : null}
+
         <section>
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#71717a]">
-            Locked in vault
+            Locked in live vault
+          </p>
+          <p className="mt-1 text-[13px] text-[#71717a]">
+            Equity currently held in {data.vaultId}
+            {previous ? ` after the move from ${previous.id}` : ''}.
           </p>
           <CollateralTray slices={data.collateral} total={totalShares} />
         </section>
 
         <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat label="MAU 30d" value={fmtInt(data.mau.d30)} hint={`14d ${data.mau.d14} · 7d ${data.mau.d7}`} accent />
-          <Stat label="Outstanding" value={usd(data.notes.outstandingUsdc)} hint={`${data.notes.active} open spends`} />
-          <Stat label="Advanced" value={usd(data.notes.advancedUsdc)} hint={`${data.notes.repaid} repaid`} />
           <Stat
-            label="Wallets"
-            value={fmtInt(data.users.withWallet)}
-            hint={`${fmtInt(data.users.total)} registered`}
+            label="Qualified MAU"
+            value={fmtInt(data.mau.qualified30)}
+            hint="≥2 user deposits / 30d · both vaults"
+            accent
           />
+          <Stat
+            label="Single deposit"
+            value={fmtInt(data.mau.single30)}
+            hint="exactly 1 deposit · not in qualified MAU"
+          />
+          <Stat
+            label="≥1 deposit"
+            value={fmtInt(data.mau.d30)}
+            hint={`7d ${fmtInt(data.mau.d7)} · 14d ${fmtInt(data.mau.d14)}`}
+          />
+          <Stat
+            label="Solidity release()"
+            value={fmtInt(data.notes.solidityReleaseSuccess30)}
+            hint={`${fmtInt(data.notes.onChainRepayTxs)} on-chain repay txs · ${fmtInt(data.notes.repaid)} notes`}
+          />
+        </section>
+
+        <section className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#71717a]">
+            Spend mix · last {data.window.days}d notes
+          </p>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {data.spendBands.map((b) => (
+              <li key={b.label}>
+                <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                  <span className="text-[#a1a1aa]">{b.label}</span>
+                  <span className="tabular text-[#f5f5f7]">
+                    {b.count} · {b.pct.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div
+                    className="h-full rounded-full bg-[#10b981]"
+                    style={{ width: `${Math.min(100, b.pct)}%` }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">
           <ChartCard
-            title="Contract MAU"
-            caption="Unique vault callers per day (deposit / release)"
-            series={[{ label: 'MAU', color: '#10b981', points: data.mau.series }]}
+            title="Daily unique depositors"
+            caption="Successful user deposit() per day, both vaults, operator excluded. Headline qualified MAU is ≥2 deposits in 30d, not this series."
+            series={[{ label: 'Depositors', color: '#10b981', points: data.mau.series }]}
           />
           <ChartCard
             title="Spend volume"
-            caption="USDC advanced and repaid per day"
+            caption="USDC advanced (notes) vs DB-marked repaid. On-chain repay includes successful Solidity release() plus HTS vault→user."
             series={[
-              { label: 'Advanced', color: '#3b82f6', points: data.spendSeries },
-              { label: 'Repaid', color: '#10b981', points: data.repaySeries },
+              { label: 'Advanced', color: '#3b82f6', points: data.spendSeries, money: true },
+              { label: 'Notes repaid', color: '#10b981', points: data.repaySeries, money: true },
+              { label: 'On-chain repay txs', color: '#f59e0b', points: data.repayChainSeries },
             ]}
-            money
           />
         </section>
 
@@ -146,12 +216,47 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
           <TxTable rows={rows} />
           <p className="mt-3 text-[12px] text-[#71717a]">
-            Showing {rows.length} of {data.counts[tab]} · refreshed {relTime(data.fetchedAt)} ·
-            Mirror + Supabase, 60s cache
+            Ledger {rows.length}/{data.counts[tab]} · snapshot {data.fetchedAt} · window {win}.
+            Qualified MAU is unique wallets with ≥2 successful user deposits across both vaults.
+            Single-deposit wallets are shown separately and are not in that count. {fmtInt(data.users.withWallet)}{' '}
+            registered wallets in DB are not MAU.
           </p>
         </section>
       </main>
     </div>
+  );
+}
+
+function VaultCard({ book }: { book: DashboardData['vaults'][number] }) {
+  const label = book.role === 'live' ? 'Live vault' : 'Previous vault';
+  return (
+    <a
+      href={book.explorer}
+      target="_blank"
+      rel="noreferrer"
+      className="block rounded-xl border border-white/[0.08] bg-[#0c0c0e]/60 p-4 transition hover:border-[#10b981]/40"
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#71717a]">{label}</p>
+      <p className="mt-1 font-mono text-[13px] text-[#10b981]">{book.id} ↗</p>
+      <dl className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
+        <div>
+          <dt className="text-[#71717a]">User deposits</dt>
+          <dd className="tabular text-[#f5f5f7]">{fmtInt(book.deposits30)}</dd>
+        </div>
+        <div>
+          <dt className="text-[#71717a]">Unique depositors</dt>
+          <dd className="tabular text-[#f5f5f7]">{fmtInt(book.uniqueDepositors30)}</dd>
+        </div>
+        <div>
+          <dt className="text-[#71717a]">release() success</dt>
+          <dd className="tabular text-[#10b981]">{fmtInt(book.releasesSuccess30)}</dd>
+        </div>
+        <div>
+          <dt className="text-[#71717a]">release() revert</dt>
+          <dd className="tabular text-[#ef4444]">{fmtInt(book.releasesFailed30)}</dd>
+        </div>
+      </dl>
+    </a>
   );
 }
 
@@ -236,7 +341,7 @@ function ChartCard({
 }: {
   title: string;
   caption: string;
-  series: { label: string; color: string; points: DayPoint[] }[];
+  series: { label: string; color: string; points: DayPoint[]; money?: boolean }[];
   money?: boolean;
 }) {
   const days = series[0]?.points ?? [];
@@ -251,6 +356,10 @@ function ChartCard({
       return `${x},${y}`;
     });
   const lastOf = (points: DayPoint[]) => points[points.length - 1];
+  const fmt = (s: { money?: boolean; points: DayPoint[] }) => {
+    const v = lastOf(s.points)?.value ?? 0;
+    return s.money || money ? usd(v) : fmtInt(v);
+  };
 
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5">
@@ -276,7 +385,7 @@ function ChartCard({
                 {series.length > 1 ? s.label : 'yesterday'}
               </p>
               <p className="tabular text-[20px] font-semibold text-[#f5f5f7]">
-                {money ? usd(lastOf(s.points)?.value ?? 0) : fmtInt(lastOf(s.points)?.value ?? 0)}
+                {fmt(s)}
               </p>
             </div>
           ))}
@@ -325,6 +434,7 @@ function TxTable({ rows }: { rows: ClassifiedTx[] }) {
           <tr className="border-b border-white/[0.06] text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
             <th className="px-4 py-3">When</th>
             <th className="px-4 py-3">Type</th>
+            <th className="px-4 py-3">Vault</th>
             <th className="px-4 py-3">Account</th>
             <th className="px-4 py-3">Detail</th>
             <th className="px-4 py-3">Result</th>
@@ -348,6 +458,16 @@ function TxTable({ rows }: { rows: ClassifiedTx[] }) {
                     </span>
                   ))}
                 </div>
+              </td>
+              <td className="px-4 py-3 font-mono text-[11px] text-[#a1a1aa]">
+                {tx.vaultRole === 'previous'
+                  ? 'prev'
+                  : tx.vaultRole === 'live'
+                    ? 'live'
+                    : '—'}
+                {tx.vaultId ? (
+                  <span className="ml-1 text-[#71717a]">{tx.vaultId.replace('0.0.', '')}</span>
+                ) : null}
               </td>
               <td className="px-4 py-3 font-mono tabular text-[#f5f5f7]">
                 {tx.user?.accountId || '—'}
@@ -402,13 +522,4 @@ function fmtWhen(iso: string): string {
     hour: '2-digit',
     minute: '2-digit',
   });
-}
-
-function relTime(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime();
-  const s = Math.max(0, Math.round(ms / 1000));
-  if (s < 60) return `${s}s ago`;
-  const m = Math.round(s / 60);
-  if (m < 60) return `${m}m ago`;
-  return `${Math.round(m / 60)}h ago`;
 }
