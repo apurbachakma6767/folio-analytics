@@ -18,6 +18,7 @@ from pathlib import Path
 VAULT = os.environ.get("FOLIO_VAULT_CONTRACT_ID", "0.0.10853130").strip()
 PREVIOUS = os.environ.get("FOLIO_VAULT_PREVIOUS_CONTRACT_ID", "0.0.10682456").strip()
 OPERATOR = os.environ.get("HEDERA_OPERATOR_ID", "0.0.10680786").strip()
+OPERATOR_ALIAS = (os.environ.get("HEDERA_OPERATOR_EVM_ALIAS") or "0x9e65596dd75950f9ab3a28fdd811d4300f8e5164").strip().lower()
 MIRROR = (
     os.environ.get("HEDERA_MIRROR_NODE_URL")
     or "https://mainnet-public.mirrornode.hedera.com"
@@ -63,11 +64,20 @@ def mirror_get(url: str) -> dict:
         return json.load(resp)
 
 
-def fetch_contract_results(contract_id: str, since_sec: int) -> list[dict]:
+def deposit_token_and_amount(params: str | None) -> tuple[str, str]:
+    hex_part = (params or "").replace("0x", "").lower()
+    if len(hex_part) < 8 + 64 + 64:
+        return "", ""
+    token_int = int(hex_part[8 : 8 + 64], 16)
+    amount = int(hex_part[8 + 64 : 8 + 128], 16)
+    return f"0.0.{token_int}", str(amount)
+
+
+def fetch_contract_results(contract_id: str, since_sec: int, until_sec: int) -> list[dict]:
     out: list[dict] = []
     url = (
         f"{MIRROR}/api/v1/contracts/{contract_id}/results"
-        f"?limit=100&order=asc&timestamp=gte:{since_sec}"
+        f"?limit=100&order=asc&timestamp=gte:{since_sec}&timestamp=lte:{until_sec}"
     )
     while url:
         data = mirror_get(url)
@@ -117,16 +127,19 @@ def main() -> None:
     now = datetime.now(timezone.utc).replace(microsecond=0)
     start = now - timedelta(days=WINDOW_DAYS)
     since_sec = int(start.timestamp())
+    until_sec = int(now.timestamp())
     vaults = [VAULT]
     if PREVIOUS and PREVIOUS != VAULT:
         vaults.insert(0, PREVIOUS)
     operator_evm = account_to_evm(OPERATOR).lower()
     skip_evm = {account_to_evm(v).lower() for v in vaults}
     skip_evm.add(operator_evm)
+    if OPERATOR_ALIAS.startswith("0x") and len(OPERATOR_ALIAS) == 42:
+        skip_evm.add(OPERATOR_ALIAS)
 
     results: list[tuple[str, dict]] = []
     for cid in vaults:
-        for row in fetch_contract_results(cid, since_sec):
+        for row in fetch_contract_results(cid, since_sec, until_sec):
             results.append((cid, row))
     registered = supabase_accounts()
 
@@ -143,12 +156,15 @@ def main() -> None:
         account = evm_to_account(evm)
         ts = str(row.get("timestamp") or "")
         tx_id = str(row.get("transaction_id") or "")
+        token_id, shares_hts = deposit_token_and_amount(row.get("function_parameters"))
         calls.append(
             {
                 "client_id": opaque_id(account),
                 "hedera_account_id": account,
                 "evm_from": evm if evm.startswith("0x") else f"0x{evm}",
                 "vault_contract_id": cid,
+                "token_id": token_id,
+                "shares_hts": shares_hts,
                 "method": "deposit",
                 "selector": f"0x{DEPOSIT}",
                 "result": "SUCCESS",
@@ -174,6 +190,8 @@ def main() -> None:
         "hedera_account_id",
         "evm_from",
         "vault_contract_id",
+        "token_id",
+        "shares_hts",
         "method",
         "selector",
         "result",
@@ -231,6 +249,8 @@ def main() -> None:
         "mirror": [f"{MIRROR}/api/v1/contracts/{c}/results" for c in vaults],
         "window_start_utc": start.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "window_end_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "mirror_gte": since_sec,
+        "mirror_lte": until_sec,
         "window_days": WINDOW_DAYS,
         "generated_at_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "included": "Successful user-paid FolioCollateralVault.deposit (0x47e7ef24) only",
@@ -258,8 +278,8 @@ def main() -> None:
 - Live contract: {VAULT}
 - Previous contract: {PREVIOUS if PREVIOUS != VAULT else "(none)"}
 - Explorer (live): {HASHSCAN}/contract/{VAULT}
-- Window start (UTC): {summary['window_start_utc']}
-- Window end (UTC): {summary['window_end_utc']}
+- Window start (UTC): {summary['window_start_utc']} (`gte:{summary['mirror_gte']}`)
+- Window end (UTC): {summary['window_end_utc']} (`lte:{summary['mirror_lte']}`)
 - Source: Mirror `/api/v1/contracts/{{id}}/results` for each vault above (all pages)
 
 Included: successful `deposit(address,uint256)` (`0x47e7ef24`) where `from` is not a vault or the operator. Unique wallets and ≥2 counts are **unioned across both vaults** so a redeploy does not reset MAU.
