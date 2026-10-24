@@ -93,9 +93,9 @@ export interface DashboardData {
     d7: number;
     d14: number;
     d30: number;
-    /** Unique wallets with ≥2 successful user vault CONTRACTCALLs in 30d (both vaults). */
+    /** Unique wallets with ≥2 remaining user deposit()s in 30d after dropping 250–280s / 480–520s successors. */
     qualified30: number;
-    /** Unique wallets with exactly one successful user vault CONTRACTCALL in 30d. */
+    /** Unique wallets with exactly one remaining user deposit() in 30d after that gap filter. */
     single30: number;
     series: DayPoint[];
   };

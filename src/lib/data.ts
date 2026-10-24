@@ -31,6 +31,33 @@ import {
 } from './types';
 
 const WINDOW_DAYS = 30;
+const BAND1_LO = 250;
+const BAND1_HI = 280;
+const BAND2_LO = 480;
+const BAND2_HI = 520;
+/** Operator ECDSA `from` — not the account-num encoding of 0.0.10680786. */
+const OPERATOR_ECDSA = '0x9e65596dd75950f9ab3a28fdd811d4300f8e5164';
+
+type UserDeposit = { key: string; t: number; day: string; vaultId: string };
+
+function isTimedGap(gapS: number | null): boolean {
+  if (gapS == null) return false;
+  return (gapS >= BAND1_LO && gapS <= BAND1_HI) || (gapS >= BAND2_LO && gapS <= BAND2_HI);
+}
+
+/** Drop successor deposits whose gap from the previous on-chain user deposit is 250–280s or 480–520s. */
+export function remainingUserDeposits(rows: UserDeposit[]): UserDeposit[] {
+  const sorted = [...rows].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key));
+  const kept: UserDeposit[] = [];
+  let prev: number | null = null;
+  for (const row of sorted) {
+    const gap = prev == null ? null : Math.round((row.t - prev) / 1000);
+    prev = row.t;
+    if (isTimedGap(gap)) continue;
+    kept.push(row);
+  }
+  return kept;
+}
 
 function daysAgoSec(n: number): number {
   return Math.floor(Date.now() / 1000) - n * 86400;
@@ -322,30 +349,48 @@ export async function loadDashboard(): Promise<DashboardData> {
   const cutoff30 = Date.now() - 30 * 86400_000;
 
   function callerKey(from: string): string | null {
-    const f = from.toLowerCase();
-    if (!f || vaultEvms.has(f) || (operatorEvm && f === operatorEvm)) return null;
+    const raw = from.toLowerCase();
+    if (!raw) return null;
+    const f = raw.startsWith('0x') ? raw : `0x${raw}`;
+    if (vaultEvms.has(f) || (operatorEvm && f === operatorEvm) || f === OPERATOR_ECDSA) {
+      return null;
+    }
     return walletByEvm.get(f)?.accountId || f;
   }
 
+  const userDeposits30: UserDeposit[] = [];
   for (const cr of contractResults) {
     if (cr.error_message) continue;
+    if (selectorOf(cr.function_parameters) !== DEPOSIT_SELECTOR) continue;
     const key = callerKey(cr.from || '');
     if (!key) continue;
     const t = new Date(tsToIso(cr.timestamp || '')).getTime();
-    if (t >= cutoff30) {
-      mauSets.d30.add(key);
-      interactionCount30.set(key, (interactionCount30.get(key) || 0) + 1);
+    if (t < cutoff30) continue;
+    userDeposits30.push({
+      key,
+      t,
+      day: dayKey(tsToIso(cr.timestamp || '')),
+      vaultId: cr.vaultId,
+    });
+  }
+  const keptDeposits = remainingUserDeposits(userDeposits30);
+
+  for (const row of keptDeposits) {
+    if (row.t >= cutoff30) {
+      mauSets.d30.add(row.key);
+      interactionCount30.set(row.key, (interactionCount30.get(row.key) || 0) + 1);
     }
-    if (t >= cutoff14) mauSets.d14.add(key);
-    if (t >= cutoff7) mauSets.d7.add(key);
-    const day = dayKey(tsToIso(cr.timestamp || ''));
-    if (!mauByDay[day]) mauByDay[day] = new Set();
-    mauByDay[day]!.add(key);
+    if (row.t >= cutoff14) mauSets.d14.add(row.key);
+    if (row.t >= cutoff7) mauSets.d7.add(row.key);
+    if (!mauByDay[row.day]) mauByDay[row.day] = new Set();
+    mauByDay[row.day]!.add(row.key);
   }
 
   const vaultBooks: VaultBook[] = vaults.map((v) => {
     const rows = contractResults.filter((cr) => cr.vaultId === v.id);
-    const depositorKeys = new Set<string>();
+    const depositorKeys = new Set(
+      keptDeposits.filter((d) => d.vaultId === v.id).map((d) => d.key)
+    );
     let deposits30 = 0;
     let releasesSuccess30 = 0;
     let releasesFailed30 = 0;
@@ -358,7 +403,6 @@ export async function loadDashboard(): Promise<DashboardData> {
         const key = callerKey(cr.from || '');
         if (!key) continue;
         deposits30++;
-        depositorKeys.add(key);
       }
       if (sel === RELEASE_SELECTOR) {
         if (ok) releasesSuccess30++;

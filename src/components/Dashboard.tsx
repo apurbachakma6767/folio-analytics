@@ -61,10 +61,10 @@ export function Dashboard({ data }: { data: DashboardData }) {
             Vault analytics
           </h1>
           <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[#a1a1aa]">
-            Unique users are wallets with a successful CONTRACTCALL on either vault in the trailing{' '}
-            {data.window.days} days ({win}). MAU is all user interactions with the vault contract,
-            split by 1 call vs ≥2 calls. Operator is excluded. Use HashScan{' '}
-            <span className="text-[#f5f5f7]">/contract/</span>, never /account/.
+            Unique users are wallets with a successful user deposit() on either vault in the trailing{' '}
+            {data.window.days} days ({win}). Successor deposits 250–280s or 480–520s after the previous
+            user deposit are dropped, then MAU is split by 1 remaining deposit vs ≥2. Operator is
+            excluded. Use HashScan <span className="text-[#f5f5f7]">/contract/</span>, never /account/.
           </p>
         </div>
       </header>
@@ -79,8 +79,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
               Hedera cannot replace contract bytecode. The first vault stored the operator as the
               account-number address, so ECDSA <span className="font-mono text-[13px]">release()</span>{' '}
               reverted. Live vault {live.id} was deployed with the ECDSA operator address. Collateral
-              moved over. Every successful user CONTRACTCALL on {previous.id} still counts in the 30-day
-              totals below — history is not reset.
+              moved over. Remaining user deposit()s on {previous.id} still count in the 30-day totals
+              below after the interval filter — history is not reset.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <VaultCard book={previous} />
@@ -117,13 +117,13 @@ export function Dashboard({ data }: { data: DashboardData }) {
               MAU 30d · both vaults
             </p>
             <p className="mt-1 text-[12px] text-[#71717a]">
-              Unique wallets with a successful vault CONTRACTCALL · 7d {fmtInt(data.mau.d7)} · 14d{' '}
-              {fmtInt(data.mau.d14)}
+              Remaining user deposit()s after dropping 250–280s / 480–520s successors · 7d{' '}
+              {fmtInt(data.mau.d7)} · 14d {fmtInt(data.mau.d14)}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-6">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
-                  ≥2 calls
+                  ≥2 deposits
                 </p>
                 <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#10b981]">
                   {fmtInt(data.mau.qualified30)}
@@ -131,7 +131,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
-                  1 call
+                  1 deposit
                 </p>
                 <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#f5f5f7]">
                   {fmtInt(data.mau.single30)}
@@ -151,8 +151,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
         <section className="grid gap-6 md:grid-cols-2">
           <ChartCard
-            title="Daily unique callers"
-            caption="Successful user CONTRACTCALLs per day on either vault. Operator excluded."
+            title="Daily unique depositors"
+            caption="Remaining successful user deposit()s per day after dropping 250–280s / 480–520s successors. Operator excluded."
             series={[{ label: 'Depositors', color: '#10b981', points: data.mau.series }]}
           />
           <ChartCard
@@ -206,9 +206,9 @@ export function Dashboard({ data }: { data: DashboardData }) {
           <TxTable rows={rows} />
           <p className="mt-3 text-[12px] text-[#71717a]">
             Ledger {rows.length}/{data.counts[tab]} · snapshot {data.fetchedAt} · window {win}.
-            MAU is unique wallets with a successful vault CONTRACTCALL across both vaults, shown as
-            ≥2 calls and 1 call. Operator excluded. {fmtInt(data.users.withWallet)} registered
-            wallets in DB are not MAU.
+            MAU is unique wallets with a remaining user deposit() after dropping 250–280s / 480–520s
+            successors, shown as ≥2 deposits and 1 deposit. Operator excluded.{' '}
+            {fmtInt(data.users.withWallet)} registered wallets in DB are not MAU.
           </p>
         </section>
       </main>
