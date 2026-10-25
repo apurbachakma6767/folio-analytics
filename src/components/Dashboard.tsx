@@ -61,10 +61,11 @@ export function Dashboard({ data }: { data: DashboardData }) {
             Vault analytics
           </h1>
           <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[#a1a1aa]">
-            Unique users are wallets with a successful user deposit() on either vault in the trailing{' '}
-            {data.window.days} days ({win}). Successor deposits 250–280s or 480–520s after the previous
-            user deposit are dropped, then MAU is split by 1 remaining deposit vs ≥2. Operator is
-            excluded. Use HashScan <span className="text-[#f5f5f7]">/contract/</span>, never /account/.
+            Unique users are wallets with a successful user deposit() or release() on either vault in
+            the trailing {data.window.days} days ({win}). Successors in the 4-min or 8-min clamp
+            neighborhoods are dropped on each stream, then MAU is split by 1 remaining call vs ≥2.
+            Operator is excluded. Use HashScan <span className="text-[#f5f5f7]">/contract/</span>,
+            never /account/.
           </p>
         </div>
       </header>
@@ -79,8 +80,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
               Hedera cannot replace contract bytecode. The first vault stored the operator as the
               account-number address, so ECDSA <span className="font-mono text-[13px]">release()</span>{' '}
               reverted. Live vault {live.id} was deployed with the ECDSA operator address. Collateral
-              moved over. Remaining user deposit()s on {previous.id} still count in the 30-day totals
-              below after the interval filter — history is not reset.
+              moved over. Remaining user deposit() and release() on {previous.id} still count in the
+              30-day totals below after the interval filter — history is not reset.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <VaultCard book={previous} />
@@ -117,13 +118,13 @@ export function Dashboard({ data }: { data: DashboardData }) {
               MAU 30d · both vaults
             </p>
             <p className="mt-1 text-[12px] text-[#71717a]">
-              Remaining user deposit()s after dropping 250–280s / 480–520s successors · 7d{' '}
+              Remaining user deposit()+release() after dropping paced successors · 7d{' '}
               {fmtInt(data.mau.d7)} · 14d {fmtInt(data.mau.d14)}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-6">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
-                  ≥2 deposits
+                  ≥2 calls
                 </p>
                 <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#10b981]">
                   {fmtInt(data.mau.qualified30)}
@@ -131,7 +132,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#71717a]">
-                  1 deposit
+                  1 call
                 </p>
                 <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#f5f5f7]">
                   {fmtInt(data.mau.single30)}
@@ -151,9 +152,9 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
         <section className="grid gap-6 md:grid-cols-2">
           <ChartCard
-            title="Daily unique depositors"
-            caption="Remaining successful user deposit()s per day after dropping 250–280s / 480–520s successors. Operator excluded."
-            series={[{ label: 'Depositors', color: '#10b981', points: data.mau.series }]}
+            title="Daily unique callers"
+            caption="Remaining successful user deposit() or release() per day after dropping paced successors on each stream. Operator excluded."
+            series={[{ label: 'Callers', color: '#10b981', points: data.mau.series }]}
           />
           <ChartCard
             title="Spend volume"
@@ -206,8 +207,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
           <TxTable rows={rows} />
           <p className="mt-3 text-[12px] text-[#71717a]">
             Ledger {rows.length}/{data.counts[tab]} · snapshot {data.fetchedAt} · window {win}.
-            MAU is unique wallets with a remaining user deposit() after dropping 250–280s / 480–520s
-            successors, shown as ≥2 deposits and 1 deposit. Operator excluded.{' '}
+            MAU is unique wallets with a remaining user deposit() or release() after dropping paced
+            successors on each stream, shown as ≥2 calls and 1 call. Operator excluded.{' '}
             {fmtInt(data.users.withWallet)} registered wallets in DB are not MAU.
           </p>
         </section>
@@ -233,7 +234,7 @@ function VaultCard({ book }: { book: DashboardData['vaults'][number] }) {
           <dd className="tabular text-[#f5f5f7]">{fmtInt(book.deposits30)}</dd>
         </div>
         <div>
-          <dt className="text-[#71717a]">Unique depositors</dt>
+          <dt className="text-[#71717a]">Unique callers</dt>
           <dd className="tabular text-[#f5f5f7]">{fmtInt(book.uniqueDepositors30)}</dd>
         </div>
         <div>

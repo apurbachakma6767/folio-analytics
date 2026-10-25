@@ -31,24 +31,30 @@ import {
 } from './types';
 
 const WINDOW_DAYS = 30;
-const BAND1_LO = 250;
-const BAND1_HI = 280;
-const BAND2_LO = 480;
-const BAND2_HI = 520;
+const BAND1_LO = 230;
+const BAND1_HI = 290;
+const BAND2_LO = 450;
+const BAND2_HI = 540;
 /** Operator ECDSA `from` — not the account-num encoding of 0.0.10680786. */
 const OPERATOR_ECDSA = '0x9e65596dd75950f9ab3a28fdd811d4300f8e5164';
 
-type UserDeposit = { key: string; t: number; day: string; vaultId: string };
+type UserVaultCall = { key: string; t: number; day: string; vaultId: string };
+
+function decodeReleaseTo(params?: string | null): string | null {
+  const hex = (params || '').replace(/^0x/i, '').toLowerCase();
+  if (hex.slice(0, 8) !== RELEASE_SELECTOR || hex.length < 8 + 128) return null;
+  return `0x${hex.slice(8 + 64, 8 + 128).slice(24)}`;
+}
 
 function isTimedGap(gapS: number | null): boolean {
   if (gapS == null) return false;
   return (gapS >= BAND1_LO && gapS <= BAND1_HI) || (gapS >= BAND2_LO && gapS <= BAND2_HI);
 }
 
-/** Drop successor deposits whose gap from the previous on-chain user deposit is 250–280s or 480–520s. */
-export function remainingUserDeposits(rows: UserDeposit[]): UserDeposit[] {
+/** Drop successors in the 4-min / 8-min clamp neighborhoods on this stream. */
+export function remainingUserDeposits(rows: UserVaultCall[]): UserVaultCall[] {
   const sorted = [...rows].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key));
-  const kept: UserDeposit[] = [];
+  const kept: UserVaultCall[] = [];
   let prev: number | null = null;
   for (const row of sorted) {
     const gap = prev == null ? null : Math.round((row.t - prev) / 1000);
@@ -226,7 +232,8 @@ export async function loadDashboard(): Promise<DashboardData> {
     const kinds: TxKind[] = ['contract'];
     if (method === 'deposit' && !cr.error_message) kinds.push('spend');
     if (method === 'release' && !cr.error_message) kinds.push('repay');
-    const user = resolveUser({ evm: cr.from });
+    const releaseTo = method === 'release' ? decodeReleaseTo(cr.function_parameters) : null;
+    const user = resolveUser({ evm: releaseTo || cr.from });
     const matchedSpend = user
       ? notes.find(
           (n) =>
@@ -358,24 +365,30 @@ export async function loadDashboard(): Promise<DashboardData> {
     return walletByEvm.get(f)?.accountId || f;
   }
 
-  const userDeposits30: UserDeposit[] = [];
+  const userDeposits30: UserVaultCall[] = [];
+  const userReleases30: UserVaultCall[] = [];
   for (const cr of contractResults) {
     if (cr.error_message) continue;
-    if (selectorOf(cr.function_parameters) !== DEPOSIT_SELECTOR) continue;
-    const key = callerKey(cr.from || '');
-    if (!key) continue;
+    const sel = selectorOf(cr.function_parameters);
     const t = new Date(tsToIso(cr.timestamp || '')).getTime();
     if (t < cutoff30) continue;
-    userDeposits30.push({
-      key,
-      t,
-      day: dayKey(tsToIso(cr.timestamp || '')),
-      vaultId: cr.vaultId,
-    });
+    const day = dayKey(tsToIso(cr.timestamp || ''));
+    if (sel === DEPOSIT_SELECTOR) {
+      const key = callerKey(cr.from || '');
+      if (!key) continue;
+      userDeposits30.push({ key, t, day, vaultId: cr.vaultId });
+    } else if (sel === RELEASE_SELECTOR) {
+      const to = decodeReleaseTo(cr.function_parameters);
+      const key = to ? callerKey(to) : null;
+      if (!key) continue;
+      userReleases30.push({ key, t, day, vaultId: cr.vaultId });
+    }
   }
   const keptDeposits = remainingUserDeposits(userDeposits30);
+  const keptReleases = remainingUserDeposits(userReleases30);
+  const keptCalls = [...keptDeposits, ...keptReleases];
 
-  for (const row of keptDeposits) {
+  for (const row of keptCalls) {
     if (row.t >= cutoff30) {
       mauSets.d30.add(row.key);
       interactionCount30.set(row.key, (interactionCount30.get(row.key) || 0) + 1);
@@ -389,7 +402,7 @@ export async function loadDashboard(): Promise<DashboardData> {
   const vaultBooks: VaultBook[] = vaults.map((v) => {
     const rows = contractResults.filter((cr) => cr.vaultId === v.id);
     const depositorKeys = new Set(
-      keptDeposits.filter((d) => d.vaultId === v.id).map((d) => d.key)
+      keptCalls.filter((d) => d.vaultId === v.id).map((d) => d.key)
     );
     let deposits30 = 0;
     let releasesSuccess30 = 0;
