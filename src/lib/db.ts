@@ -75,6 +75,38 @@ export async function loadSpendNotes(): Promise<SpendRow[]> {
   }));
 }
 
+export type DepositAttemptRow = {
+  status: string;
+  walletId: string;
+  at: string;
+  failureReason: string;
+  eventId: string;
+};
+
+export async function loadDepositAttempts(): Promise<DepositAttemptRow[]> {
+  const out: DepositAttemptRow[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await getSupabase()
+      .from('deposit_attempts')
+      .select('status,wallet_id,event_timestamp,failure_reason,event_id')
+      .order('event_timestamp', { ascending: true })
+      .range(from, from + 999);
+    if (error) throw error;
+    if (!data?.length) break;
+    for (const r of data) {
+      out.push({
+        status: String(r.status || ''),
+        walletId: String(r.wallet_id || ''),
+        at: String(r.event_timestamp || ''),
+        failureReason: String(r.failure_reason || ''),
+        eventId: String(r.event_id || ''),
+      });
+    }
+    if (data.length < 1000) break;
+  }
+  return out;
+}
+
 export async function loadEquityTokens(): Promise<EquityToken[]> {
   const { data, error } = await getSupabase()
     .from('folio_equity_tokens')

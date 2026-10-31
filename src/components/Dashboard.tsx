@@ -128,9 +128,9 @@ export function Dashboard({ data }: { data: DashboardData }) {
           </details>
 
           <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">
-            Download the data behind these numbers
+            Downloads
           </p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <CsvLink
               href="/mau-included.csv"
               filename="folio-mau-included.csv"
@@ -149,6 +149,12 @@ export function Dashboard({ data }: { data: DashboardData }) {
               filename="folio-mau-discarded.csv"
               title="Excluded transactions"
               hint="Repeat calls not counted"
+            />
+            <CsvLink
+              href="/deposit-attempts.csv"
+              filename="folio-deposit-attempts.csv"
+              title="10–16 outage"
+              hint="Deposit attempt log"
             />
           </div>
         </section>

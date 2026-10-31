@@ -1,5 +1,5 @@
 import { getHashscanBase, hashscanTx } from './env';
-import { loadWalletEmails } from './db';
+import { loadDepositAttempts, loadWalletEmails } from './db';
 import { getMauSource, type MauCall } from './data';
 
 function csvCell(v: unknown): string {
@@ -54,6 +54,21 @@ export async function mauUsersCsv(): Promise<string> {
     wallets.map((accountId) => ({
       email: emails.get(accountId) || '',
       hedera_account_id: accountId,
+    }))
+  );
+}
+
+export async function depositAttemptsCsv(): Promise<string> {
+  const rows = await loadDepositAttempts();
+  return toCsv(
+    ['status', 'hedera_account_id', 'at_utc', 'failure_reason', 'event_id', 'explorer_url'],
+    rows.map((row) => ({
+      status: row.status,
+      hedera_account_id: row.walletId,
+      at_utc: row.at,
+      failure_reason: row.failureReason,
+      event_id: row.eventId,
+      explorer_url: row.eventId ? hashscanTx(row.eventId) : '',
     }))
   );
 }
