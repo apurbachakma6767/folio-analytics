@@ -30,7 +30,7 @@ The dashboard unions successful user vault `deposit()` and `release()` across **
 Live CSVs at the same paths (same 60s cache as the dashboard MAU figures):
 
 - `/mau-included.csv` — remaining deposit()/release() that count in MAU
-- `/mau-users.csv` — email ↔ wallet
+- `/mau-users.csv` — every app wallet and its email
 - `/mau-discarded.csv` — repeat calls excluded from MAU
 - `/deposit-attempts.csv` — 10–16 Oct outage report
 

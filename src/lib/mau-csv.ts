@@ -45,10 +45,8 @@ export async function mauDiscardedCsv(): Promise<string> {
 }
 
 export async function mauUsersCsv(): Promise<string> {
-  const [mau, emails] = await Promise.all([getMauSource(), loadWalletEmails()]);
-  const wallets = [...new Set([...mau.kept, ...mau.dropped].map((r) => r.key))].sort((a, b) =>
-    a.localeCompare(b, 'en', { numeric: true })
-  );
+  const emails = await loadWalletEmails();
+  const wallets = [...emails.keys()].sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
   return toCsv(
     ['email', 'hedera_account_id'],
     wallets.map((accountId) => ({

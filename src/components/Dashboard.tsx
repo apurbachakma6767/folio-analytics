@@ -142,7 +142,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
               href="/mau-users.csv"
               filename="folio-mau-users.csv"
               title="Wallet list"
-              hint="Email and wallet ID"
+              hint="Every app wallet"
             />
             <CsvLink
               href="/mau-discarded.csv"
