@@ -93,9 +93,9 @@ export interface DashboardData {
     d7: number;
     d14: number;
     d30: number;
-    /** Unique wallets with ≥2 remaining user deposit()+release() in 30d after dropping paced successors on each stream. */
+    /** Unique wallets with ≥2 remaining user deposit()+release() in 30d after dropping repeat-call successors. */
     qualified30: number;
-    /** Unique wallets with exactly one remaining user deposit() or release() in 30d after that gap filter. */
+    /** Unique wallets with exactly one remaining user deposit() or release() in 30d after that filter. */
     single30: number;
     series: DayPoint[];
   };

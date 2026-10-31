@@ -25,12 +25,12 @@ Required in `.env.local`:
 - `USDC_TOKEN_ID`
 - `HEDERA_OPERATOR_ID` (optional, labels operator rows)
 
-The dashboard unions successful user vault `deposit()` and `release()` across **both** vaults (operator excluded; release attributed to `to`). Successors in the 4-min (230–290s) and 8-min (450–540s) clamp neighborhoods are dropped on each stream. MAU is unique wallets in 30 days, shown as 1 remaining call vs ≥2.
+The dashboard unions successful user vault `deposit()` and `release()` across **both** vaults (operator excluded; release attributed to `to`). Immediate repeat calls on each stream are excluded. MAU is unique wallets in 30 days, shown as 1 remaining call vs ≥2.
 
 Live CSVs at the same paths (same 60s cache as the dashboard MAU figures):
 
-- `/mau-discarded.csv` — paced successors dropped from MAU
-- `/mau-users.csv` — email ↔ wallet
 - `/mau-included.csv` — remaining deposit()/release() that count in MAU
+- `/mau-users.csv` — email ↔ wallet
+- `/mau-discarded.csv` — repeat calls excluded from MAU
 
 Do not expose this on a public URL without auth — the service role can read the user table.

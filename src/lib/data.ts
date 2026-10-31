@@ -51,7 +51,6 @@ export type MauCall = {
 
 export type MauSource = {
   wallets: WalletUser[];
-  contractResults: Array<MirrorContractResult & { vaultId: string; vaultRole: VaultBook['role'] }>;
   kept: MauCall[];
   dropped: Array<MauCall & { gapS: number }>;
 };
@@ -83,19 +82,9 @@ function partitionPaced<T extends { t: number; key: string }>(
   return { kept, dropped };
 }
 
-/** Drop successors in the 4-min / 8-min clamp neighborhoods on this stream. */
+/** Drop immediate repeat-call successors on this stream. */
 export function remainingUserDeposits<T extends { t: number; key: string }>(rows: T[]): T[] {
   return partitionPaced(rows).kept;
-}
-
-function clampBand(gapS: number): string {
-  if (gapS >= BAND1_LO && gapS <= BAND1_HI) return `${BAND1_LO}-${BAND1_HI}`;
-  if (gapS >= BAND2_LO && gapS <= BAND2_HI) return `${BAND2_LO}-${BAND2_HI}`;
-  return '';
-}
-
-export function mauClampBand(gapS: number): string {
-  return clampBand(gapS);
 }
 
 async function loadMauSourceUncached(): Promise<MauSource> {
@@ -113,7 +102,8 @@ async function loadMauSourceUncached(): Promise<MauSource> {
     ),
   ]);
 
-  const contractResults: MauSource['contractResults'] = [];
+  const contractResults: Array<MirrorContractResult & { vaultId: string; vaultRole: VaultBook['role'] }> =
+    [];
   vaults.forEach((v, i) => {
     for (const cr of perVault[i] || []) {
       contractResults.push({ ...cr, vaultId: v.id, vaultRole: v.role });
@@ -163,7 +153,6 @@ async function loadMauSourceUncached(): Promise<MauSource> {
   const rel = partitionPaced(releases);
   return {
     wallets,
-    contractResults,
     kept: [...dep.kept, ...rel.kept].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key)),
     dropped: [...dep.dropped, ...rel.dropped].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key)),
   };
@@ -241,16 +230,23 @@ export async function loadDashboard(): Promise<DashboardData> {
     loadUserCounts(),
     loadSpendNotes(),
     loadEquityTokens(),
-    ...vaults.map((v) => fetchAccountTransactions(v.id, since).catch(() => [] as MirrorTx[])),
+    ...vaults.flatMap((v) => [
+      fetchAllContractResults(v.id, since).catch(() => [] as MirrorContractResult[]),
+      fetchAccountTransactions(v.id, since).catch(() => [] as MirrorTx[]),
+    ]),
     fetchAccountTokens(vaultId).catch(() => [] as Array<{ token_id: string; balance: number }>),
   ]);
 
   const vaultTokens = perVault.pop() as Array<{ token_id: string; balance: number }>;
   const wallets = mau.wallets;
-  const contractResults = mau.contractResults;
+  const contractResults: Array<MirrorContractResult & { vaultId: string; vaultRole: VaultBook['role'] }> =
+    [];
   const vaultTxs: MirrorTx[] = [];
-  vaults.forEach((_, i) => {
-    vaultTxs.push(...((perVault[i] || []) as MirrorTx[]));
+  vaults.forEach((v, i) => {
+    const results = (perVault[i * 2] || []) as MirrorContractResult[];
+    const txs = (perVault[i * 2 + 1] || []) as MirrorTx[];
+    for (const cr of results) contractResults.push({ ...cr, vaultId: v.id, vaultRole: v.role });
+    vaultTxs.push(...txs);
   });
 
   const walletByAccount = new Map(wallets.map((w) => [w.accountId, w]));

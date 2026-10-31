@@ -1,6 +1,6 @@
 import { getHashscanBase, hashscanTx } from './env';
 import { loadWalletEmails } from './db';
-import { getMauSource, mauClampBand, type MauCall } from './data';
+import { getMauSource, type MauCall } from './data';
 
 function csvCell(v: unknown): string {
   const s = v == null ? '' : String(v);
@@ -33,12 +33,11 @@ export function csvResponse(body: string, filename: string): Response {
 export async function mauDiscardedCsv(): Promise<string> {
   const mau = await getMauSource();
   return toCsv(
-    ['method', 'hedera_account_id', 'gap_seconds', 'clamp_band', 'at_utc', 'explorer_url'],
+    ['method', 'hedera_account_id', 'exclusion_reason', 'at_utc', 'explorer_url'],
     mau.dropped.map((row) => ({
       method: row.method,
       hedera_account_id: row.key,
-      gap_seconds: row.gapS,
-      clamp_band: mauClampBand(row.gapS),
+      exclusion_reason: 'repeat call',
       at_utc: new Date(row.t).toISOString(),
       explorer_url: explorer(row),
     }))
