@@ -32,6 +32,6 @@ Live CSVs at the same paths (same 60s cache as the dashboard MAU figures):
 - `/mau-included.csv` — remaining deposit()/release() that count in MAU
 - `/mau-users.csv` — email ↔ wallet
 - `/mau-discarded.csv` — repeat calls excluded from MAU
-- `/deposit-attempts.csv` — 10–16 Oct outage deposit attempt log
+- `/deposit-attempts.csv` — 10–16 Oct outage report
 
 Do not expose this on a public URL without auth — the service role can read the user table.

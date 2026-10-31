@@ -153,7 +153,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
             <CsvLink
               href="/deposit-attempts.csv"
               filename="folio-deposit-attempts.csv"
-              title="10–16 outage"
+              title="10–16 Oct outage report"
               hint="Deposit attempt log"
             />
           </div>
