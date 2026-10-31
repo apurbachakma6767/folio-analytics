@@ -89,6 +89,7 @@ export async function loadDepositAttempts(): Promise<DepositAttemptRow[]> {
     const { data, error } = await getSupabase()
       .from('deposit_attempts')
       .select('status,wallet_id,event_timestamp,failure_reason,event_id')
+      .eq('status', 'FAILED')
       .order('event_timestamp', { ascending: true })
       .range(from, from + 999);
     if (error) throw error;

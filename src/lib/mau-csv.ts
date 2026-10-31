@@ -59,16 +59,14 @@ export async function mauUsersCsv(): Promise<string> {
 }
 
 export async function depositAttemptsCsv(): Promise<string> {
-  const rows = await loadDepositAttempts();
+  const rows = (await loadDepositAttempts()).filter((row) => row.status === 'FAILED');
   return toCsv(
-    ['status', 'hedera_account_id', 'at_utc', 'failure_reason', 'event_id', 'explorer_url'],
+    ['status', 'hedera_account_id', 'at_utc', 'failure_reason'],
     rows.map((row) => ({
       status: row.status,
       hedera_account_id: row.walletId,
       at_utc: row.at,
       failure_reason: row.failureReason,
-      event_id: row.eventId,
-      explorer_url: row.eventId ? hashscanTx(row.eventId) : '',
     }))
   );
 }
