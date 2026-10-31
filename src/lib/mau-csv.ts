@@ -30,6 +30,12 @@ export function csvResponse(body: string, filename: string): Response {
   });
 }
 
+function sameMethodReason(gapS: number): string {
+  if (gapS >= 230 && gapS <= 290) return 'same-method 230-290s';
+  if (gapS >= 450 && gapS <= 540) return 'same-method 450-540s';
+  return 'same-method gap';
+}
+
 export async function mauDiscardedCsv(): Promise<string> {
   const mau = await getMauSource();
   return toCsv(
@@ -37,7 +43,7 @@ export async function mauDiscardedCsv(): Promise<string> {
     mau.dropped.map((row) => ({
       method: row.method,
       hedera_account_id: row.key,
-      exclusion_reason: 'repeat call',
+      exclusion_reason: sameMethodReason(row.gapS),
       at_utc: new Date(row.t).toISOString(),
       explorer_url: explorer(row),
     }))

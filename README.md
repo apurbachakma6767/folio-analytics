@@ -31,7 +31,7 @@ Live CSVs at the same paths (same 60s cache as the dashboard MAU figures):
 
 - `/mau-included.csv` — remaining deposit()/release() that count in MAU
 - `/mau-users.csv` — every app wallet and its email
-- `/mau-discarded.csv` — repeat calls excluded from MAU
+- `/mau-discarded.csv` — same-method 230–290s or 450–540s drops
 - `/deposit-attempts.csv` — 10–16 Oct outage report
 
 Do not expose this on a public URL without auth — the service role can read the user table.
