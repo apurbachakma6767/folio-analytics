@@ -142,9 +142,12 @@ export function Dashboard({ data }: { data: DashboardData }) {
             </ol>
             <p>
               A deposit a few minutes from a release can stay in. Those calls sit on different
-              lists, so that gap is not an exclusion gap. deposit() is a spend lock; release() is a
-              repay unlock. That pair is two product actions, not a same-method repeat. The excluded
-              CSV is same-method drops only.
+              lists, so that gap is not an exclusion gap. Most of those neighbors are different
+              wallets: one user’s deposit next to another user’s release on the same contract
+              timeline. That is two methods sharing a busy hour, not one wallet repeating a call.
+              10–16 Oct is when both methods completed in the same hours after the outage, so
+              cross-method neighbors are common that week and rare on other days. The excluded CSV
+              is same-method drops only.
             </p>
           </div>
 

@@ -1,5 +1,5 @@
 import { getHashscanBase, hashscanTx } from './env';
-import { loadDepositAttempts, loadWalletEmails } from './db';
+import { loadDepositAttempts, loadWalletEmails, loadWallets } from './db';
 import { getMauSource, type MauCall } from './data';
 
 function csvCell(v: unknown): string {
@@ -57,7 +57,14 @@ export async function mauUsersCsv(): Promise<string> {
 }
 
 export async function depositAttemptsCsv(): Promise<string> {
-  const rows = (await loadDepositAttempts()).filter((row) => row.status === 'FAILED');
+  const [attempts, wallets] = await Promise.all([loadDepositAttempts(), loadWallets()]);
+  const createdMs = new Map(wallets.map((w) => [w.accountId, Date.parse(w.createdAt)]));
+  const rows = attempts.filter((row) => {
+    if (row.status !== 'FAILED') return false;
+    const born = createdMs.get(row.walletId);
+    const at = Date.parse(row.at);
+    return Number.isFinite(born) && Number.isFinite(at) && (born as number) <= at;
+  });
   return toCsv(
     ['status', 'hedera_account_id', 'at_utc', 'failure_reason'],
     rows.map((row) => ({
