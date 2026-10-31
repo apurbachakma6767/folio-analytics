@@ -183,6 +183,24 @@ export function Dashboard({ data }: { data: DashboardData }) {
             />
           </div>
 
+          <p className="mb-3 text-[13px] leading-relaxed text-[#a1a1aa]">
+            MAU CSVs (same 30-day filter as the figures above):{' '}
+            <a
+              href="/mau-discarded.csv"
+              className="text-[#10b981] hover:underline"
+            >
+              discarded paced txs
+            </a>
+            {' · '}
+            <a href="/mau-users.csv" className="text-[#10b981] hover:underline">
+              user–wallet mapping
+            </a>
+            {' · '}
+            <a href="/mau-included.csv" className="text-[#10b981] hover:underline">
+              included txs
+            </a>
+          </p>
+
           <div className="mb-3 flex flex-wrap gap-1 rounded-full border border-white/[0.06] bg-[#161618] p-1 w-fit">
             {TABS.map((t) => {
               const on = tab === t.id;

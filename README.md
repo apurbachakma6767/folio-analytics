@@ -27,4 +27,10 @@ Required in `.env.local`:
 
 The dashboard unions successful user vault `deposit()` and `release()` across **both** vaults (operator excluded; release attributed to `to`). Successors in the 4-min (230–290s) and 8-min (450–540s) clamp neighborhoods are dropped on each stream. MAU is unique wallets in 30 days, shown as 1 remaining call vs ≥2.
 
+Public CSVs (regenerate with `npm run export-mau-csvs`):
+
+- `/mau-discarded.csv` — paced successors dropped from MAU
+- `/mau-users.csv` — email ↔ wallet mapping and remaining-call counts
+- `/mau-included.csv` — remaining deposit()/release() that count in MAU
+
 Do not expose this on a public URL without auth — the service role can read the user table.
