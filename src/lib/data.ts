@@ -92,8 +92,8 @@ async function loadMauSourceUncached(): Promise<MauSource> {
   const vaultEvms = new Set(vaults.map((v) => v.evm.toLowerCase()));
   const operatorId = getOperatorId();
   const operatorEvm = operatorId ? accountToEvm(operatorId).toLowerCase() : '';
-  const since = daysAgoSec(WINDOW_DAYS);
-  const cutoff30 = Date.now() - WINDOW_DAYS * 86400_000;
+  const win30 = closedUtcWindow(WINDOW_DAYS);
+  const since = Math.floor(win30.startMs / 1000);
 
   const [wallets, ...perVault] = await Promise.all([
     loadWallets(),
@@ -128,7 +128,7 @@ async function loadMauSourceUncached(): Promise<MauSource> {
     if (cr.error_message) continue;
     const sel = selectorOf(cr.function_parameters);
     const t = new Date(tsToIso(cr.timestamp || '')).getTime();
-    if (t < cutoff30) continue;
+    if (!inWindow(t, win30.startMs, win30.endMs)) continue;
     const day = dayKey(tsToIso(cr.timestamp || ''));
     const meta = {
       t,
@@ -158,13 +158,9 @@ async function loadMauSourceUncached(): Promise<MauSource> {
   };
 }
 
-export const getMauSource = unstable_cache(loadMauSourceUncached, ['mau-source-v1'], {
+export const getMauSource = unstable_cache(loadMauSourceUncached, ['mau-source-v2'], {
   revalidate: 60,
 });
-
-function daysAgoSec(n: number): number {
-  return Math.floor(Date.now() / 1000) - n * 86400;
-}
 
 function tsToIso(ts: string): string {
   const sec = Number(String(ts).split('.')[0]);
@@ -184,13 +180,30 @@ function dayKey(iso: string): string {
 function lastNDays(n: number): string[] {
   const out: string[] = [];
   const now = new Date();
-  // Closed days only — skip UTC today so the last point is not an incomplete day.
+  // Closed UTC days only — skip today so the printed window matches the count.
   for (let i = n; i >= 1; i--) {
     const d = new Date(now);
     d.setUTCDate(d.getUTCDate() - i);
     out.push(d.toISOString().slice(0, 10));
   }
   return out;
+}
+
+function closedUtcWindow(days: number): {
+  days: string[];
+  start: string;
+  end: string;
+  startMs: number;
+  endMs: number;
+} {
+  const keys = lastNDays(days);
+  const start = `${keys[0] || ''}T00:00:00.000Z`;
+  const end = `${keys[keys.length - 1] || ''}T23:59:59.999Z`;
+  return { days: keys, start, end, startMs: Date.parse(start), endMs: Date.parse(end) };
+}
+
+function inWindow(t: number, startMs: number, endMs: number): boolean {
+  return t >= startMs && t <= endMs;
 }
 
 export function normalizeTxId(id: string): string {
@@ -223,7 +236,7 @@ export async function loadDashboard(): Promise<DashboardData> {
   const operatorId = getOperatorId();
   const operatorEvm = operatorId ? accountToEvm(operatorId).toLowerCase() : '';
   const usdc = getUsdcTokenId();
-  const since = daysAgoSec(WINDOW_DAYS);
+  const since = Math.floor(closedUtcWindow(WINDOW_DAYS).startMs / 1000);
 
   const [mau, counts, notes, equities, ...perVault] = await Promise.all([
     getMauSource(),
@@ -449,18 +462,18 @@ export async function loadDashboard(): Promise<DashboardData> {
   const mauSets = { d7: new Set<string>(), d14: new Set<string>(), d30: new Set<string>() };
   const mauByDay: Record<string, Set<string>> = {};
   const interactionCount30 = new Map<string, number>();
-  const cutoff7 = Date.now() - 7 * 86400_000;
-  const cutoff14 = Date.now() - 14 * 86400_000;
-  const cutoff30 = Date.now() - 30 * 86400_000;
+  const win7 = closedUtcWindow(7);
+  const win14 = closedUtcWindow(14);
+  const win30 = closedUtcWindow(WINDOW_DAYS);
   const keptCalls = mau.kept;
 
   for (const row of keptCalls) {
-    if (row.t >= cutoff30) {
+    if (inWindow(row.t, win30.startMs, win30.endMs)) {
       mauSets.d30.add(row.key);
       interactionCount30.set(row.key, (interactionCount30.get(row.key) || 0) + 1);
     }
-    if (row.t >= cutoff14) mauSets.d14.add(row.key);
-    if (row.t >= cutoff7) mauSets.d7.add(row.key);
+    if (inWindow(row.t, win14.startMs, win14.endMs)) mauSets.d14.add(row.key);
+    if (inWindow(row.t, win7.startMs, win7.endMs)) mauSets.d7.add(row.key);
     if (!mauByDay[row.day]) mauByDay[row.day] = new Set();
     mauByDay[row.day]!.add(row.key);
   }
@@ -475,7 +488,7 @@ export async function loadDashboard(): Promise<DashboardData> {
     let releasesFailed30 = 0;
     for (const cr of rows) {
       const t = new Date(tsToIso(cr.timestamp || '')).getTime();
-      if (t < cutoff30) continue;
+      if (!inWindow(t, win30.startMs, win30.endMs)) continue;
       const sel = selectorOf(cr.function_parameters);
       const ok = !cr.error_message;
       if (sel === DEPOSIT_SELECTOR && ok) {
@@ -505,13 +518,15 @@ export async function loadDashboard(): Promise<DashboardData> {
 
   const solidityReleaseSuccess30 = vaultBooks.reduce((s, v) => s + v.releasesSuccess30, 0);
 
-  const windowDays = lastNDays(WINDOW_DAYS);
-  const windowStart = `${windowDays[0] || ''}T00:00:00.000Z`;
-  const windowEnd = `${windowDays[windowDays.length - 1] || ''}T23:59:59.999Z`;
+  const windowDays = win30.days;
+  const windowStart = win30.start;
+  const windowEnd = win30.end;
 
   const spendByDay: Record<string, number> = {};
   const repayByDay: Record<string, number> = {};
-  const recentNotes = notes.filter((n) => new Date(n.createdAt).getTime() >= cutoff30);
+  const recentNotes = notes.filter((n) =>
+    inWindow(new Date(n.createdAt).getTime(), win30.startMs, win30.endMs)
+  );
   const bandDefs: Array<{ label: string; pred: (n: number) => boolean }> = [
     { label: '$5.00–10.00', pred: (n) => n >= 5 && n <= 10 },
     { label: '$10.01–14.99', pred: (n) => n > 10 && n < 15 },
