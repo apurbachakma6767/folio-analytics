@@ -6,8 +6,7 @@
     "dev": "next dev -p 3100 --webpack",
     "build": "next build",
     "start": "next start -p 3100",
-    "lint": "eslint",
-    "export-mau-csvs": "npx tsx --env-file=.env.local scripts/write-mau-csvs.ts"
+    "lint": "eslint"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",

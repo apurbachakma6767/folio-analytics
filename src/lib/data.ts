@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import {
   getAllVaults,
   getNetwork,
@@ -38,7 +39,22 @@ const BAND2_HI = 540;
 /** Operator ECDSA `from` — not the account-num encoding of 0.0.10680786. */
 const OPERATOR_ECDSA = '0x9e65596dd75950f9ab3a28fdd811d4300f8e5164';
 
-type UserVaultCall = { key: string; t: number; day: string; vaultId: string };
+export type MauCall = {
+  key: string;
+  t: number;
+  day: string;
+  vaultId: string;
+  method: 'deposit' | 'release';
+  timestamp: string;
+  transactionId: string;
+};
+
+export type MauSource = {
+  wallets: WalletUser[];
+  contractResults: Array<MirrorContractResult & { vaultId: string; vaultRole: VaultBook['role'] }>;
+  kept: MauCall[];
+  dropped: Array<MauCall & { gapS: number }>;
+};
 
 function decodeReleaseTo(params?: string | null): string | null {
   const hex = (params || '').replace(/^0x/i, '').toLowerCase();
@@ -51,19 +67,111 @@ function isTimedGap(gapS: number | null): boolean {
   return (gapS >= BAND1_LO && gapS <= BAND1_HI) || (gapS >= BAND2_LO && gapS <= BAND2_HI);
 }
 
-/** Drop successors in the 4-min / 8-min clamp neighborhoods on this stream. */
-export function remainingUserDeposits(rows: UserVaultCall[]): UserVaultCall[] {
+function partitionPaced<T extends { t: number; key: string }>(
+  rows: T[]
+): { kept: T[]; dropped: Array<T & { gapS: number }> } {
   const sorted = [...rows].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key));
-  const kept: UserVaultCall[] = [];
+  const kept: T[] = [];
+  const dropped: Array<T & { gapS: number }> = [];
   let prev: number | null = null;
   for (const row of sorted) {
     const gap = prev == null ? null : Math.round((row.t - prev) / 1000);
     prev = row.t;
-    if (isTimedGap(gap)) continue;
-    kept.push(row);
+    if (isTimedGap(gap)) dropped.push({ ...row, gapS: gap! });
+    else kept.push(row);
   }
-  return kept;
+  return { kept, dropped };
 }
+
+/** Drop successors in the 4-min / 8-min clamp neighborhoods on this stream. */
+export function remainingUserDeposits<T extends { t: number; key: string }>(rows: T[]): T[] {
+  return partitionPaced(rows).kept;
+}
+
+function clampBand(gapS: number): string {
+  if (gapS >= BAND1_LO && gapS <= BAND1_HI) return `${BAND1_LO}-${BAND1_HI}`;
+  if (gapS >= BAND2_LO && gapS <= BAND2_HI) return `${BAND2_LO}-${BAND2_HI}`;
+  return '';
+}
+
+export function mauClampBand(gapS: number): string {
+  return clampBand(gapS);
+}
+
+async function loadMauSourceUncached(): Promise<MauSource> {
+  const vaults = getAllVaults();
+  const vaultEvms = new Set(vaults.map((v) => v.evm.toLowerCase()));
+  const operatorId = getOperatorId();
+  const operatorEvm = operatorId ? accountToEvm(operatorId).toLowerCase() : '';
+  const since = daysAgoSec(WINDOW_DAYS);
+  const cutoff30 = Date.now() - WINDOW_DAYS * 86400_000;
+
+  const [wallets, ...perVault] = await Promise.all([
+    loadWallets(),
+    ...vaults.map((v) =>
+      fetchAllContractResults(v.id, since).catch(() => [] as MirrorContractResult[])
+    ),
+  ]);
+
+  const contractResults: MauSource['contractResults'] = [];
+  vaults.forEach((v, i) => {
+    for (const cr of perVault[i] || []) {
+      contractResults.push({ ...cr, vaultId: v.id, vaultRole: v.role });
+    }
+  });
+
+  const walletByEvm = new Map(wallets.map((w) => [w.evm.toLowerCase(), w]));
+
+  function callerKey(from: string): string | null {
+    const raw = from.toLowerCase();
+    if (!raw) return null;
+    const f = raw.startsWith('0x') ? raw : `0x${raw}`;
+    if (vaultEvms.has(f) || (operatorEvm && f === operatorEvm) || f === OPERATOR_ECDSA) {
+      return null;
+    }
+    return walletByEvm.get(f)?.accountId || f;
+  }
+
+  const deposits: MauCall[] = [];
+  const releases: MauCall[] = [];
+  for (const cr of contractResults) {
+    if (cr.error_message) continue;
+    const sel = selectorOf(cr.function_parameters);
+    const t = new Date(tsToIso(cr.timestamp || '')).getTime();
+    if (t < cutoff30) continue;
+    const day = dayKey(tsToIso(cr.timestamp || ''));
+    const meta = {
+      t,
+      day,
+      vaultId: cr.vaultId,
+      timestamp: cr.timestamp || '',
+      transactionId: cr.transaction_id || '',
+    };
+    if (sel === DEPOSIT_SELECTOR) {
+      const key = callerKey(cr.from || '');
+      if (!key) continue;
+      deposits.push({ ...meta, key, method: 'deposit' });
+    } else if (sel === RELEASE_SELECTOR) {
+      const to = decodeReleaseTo(cr.function_parameters);
+      const key = to ? callerKey(to) : null;
+      if (!key) continue;
+      releases.push({ ...meta, key, method: 'release' });
+    }
+  }
+
+  const dep = partitionPaced(deposits);
+  const rel = partitionPaced(releases);
+  return {
+    wallets,
+    contractResults,
+    kept: [...dep.kept, ...rel.kept].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key)),
+    dropped: [...dep.dropped, ...rel.dropped].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key)),
+  };
+}
+
+export const getMauSource = unstable_cache(loadMauSourceUncached, ['mau-source-v1'], {
+  revalidate: 60,
+});
 
 function daysAgoSec(n: number): number {
   return Math.floor(Date.now() / 1000) - n * 86400;
@@ -128,27 +236,21 @@ export async function loadDashboard(): Promise<DashboardData> {
   const usdc = getUsdcTokenId();
   const since = daysAgoSec(WINDOW_DAYS);
 
-  const [wallets, counts, notes, equities, ...perVault] = await Promise.all([
-    loadWallets(),
+  const [mau, counts, notes, equities, ...perVault] = await Promise.all([
+    getMauSource(),
     loadUserCounts(),
     loadSpendNotes(),
     loadEquityTokens(),
-    ...vaults.flatMap((v) => [
-      fetchAllContractResults(v.id, since).catch(() => [] as MirrorContractResult[]),
-      fetchAccountTransactions(v.id, since).catch(() => [] as MirrorTx[]),
-    ]),
+    ...vaults.map((v) => fetchAccountTransactions(v.id, since).catch(() => [] as MirrorTx[])),
     fetchAccountTokens(vaultId).catch(() => [] as Array<{ token_id: string; balance: number }>),
   ]);
 
   const vaultTokens = perVault.pop() as Array<{ token_id: string; balance: number }>;
-  const contractResults: Array<MirrorContractResult & { vaultId: string; vaultRole: VaultBook['role'] }> =
-    [];
+  const wallets = mau.wallets;
+  const contractResults = mau.contractResults;
   const vaultTxs: MirrorTx[] = [];
-  vaults.forEach((v, i) => {
-    const results = (perVault[i * 2] || []) as MirrorContractResult[];
-    const txs = (perVault[i * 2 + 1] || []) as MirrorTx[];
-    for (const cr of results) contractResults.push({ ...cr, vaultId: v.id, vaultRole: v.role });
-    vaultTxs.push(...txs);
+  vaults.forEach((_, i) => {
+    vaultTxs.push(...((perVault[i] || []) as MirrorTx[]));
   });
 
   const walletByAccount = new Map(wallets.map((w) => [w.accountId, w]));
@@ -354,39 +456,7 @@ export async function loadDashboard(): Promise<DashboardData> {
   const cutoff7 = Date.now() - 7 * 86400_000;
   const cutoff14 = Date.now() - 14 * 86400_000;
   const cutoff30 = Date.now() - 30 * 86400_000;
-
-  function callerKey(from: string): string | null {
-    const raw = from.toLowerCase();
-    if (!raw) return null;
-    const f = raw.startsWith('0x') ? raw : `0x${raw}`;
-    if (vaultEvms.has(f) || (operatorEvm && f === operatorEvm) || f === OPERATOR_ECDSA) {
-      return null;
-    }
-    return walletByEvm.get(f)?.accountId || f;
-  }
-
-  const userDeposits30: UserVaultCall[] = [];
-  const userReleases30: UserVaultCall[] = [];
-  for (const cr of contractResults) {
-    if (cr.error_message) continue;
-    const sel = selectorOf(cr.function_parameters);
-    const t = new Date(tsToIso(cr.timestamp || '')).getTime();
-    if (t < cutoff30) continue;
-    const day = dayKey(tsToIso(cr.timestamp || ''));
-    if (sel === DEPOSIT_SELECTOR) {
-      const key = callerKey(cr.from || '');
-      if (!key) continue;
-      userDeposits30.push({ key, t, day, vaultId: cr.vaultId });
-    } else if (sel === RELEASE_SELECTOR) {
-      const to = decodeReleaseTo(cr.function_parameters);
-      const key = to ? callerKey(to) : null;
-      if (!key) continue;
-      userReleases30.push({ key, t, day, vaultId: cr.vaultId });
-    }
-  }
-  const keptDeposits = remainingUserDeposits(userDeposits30);
-  const keptReleases = remainingUserDeposits(userReleases30);
-  const keptCalls = [...keptDeposits, ...keptReleases];
+  const keptCalls = mau.kept;
 
   for (const row of keptCalls) {
     if (row.t >= cutoff30) {
@@ -413,8 +483,11 @@ export async function loadDashboard(): Promise<DashboardData> {
       const sel = selectorOf(cr.function_parameters);
       const ok = !cr.error_message;
       if (sel === DEPOSIT_SELECTOR && ok) {
-        const key = callerKey(cr.from || '');
-        if (!key) continue;
+        const raw = (cr.from || '').toLowerCase();
+        const f = raw.startsWith('0x') ? raw : raw ? `0x${raw}` : '';
+        if (!f || vaultEvms.has(f) || (operatorEvm && f === operatorEvm) || f === OPERATOR_ECDSA) {
+          continue;
+        }
         deposits30++;
       }
       if (sel === RELEASE_SELECTOR) {

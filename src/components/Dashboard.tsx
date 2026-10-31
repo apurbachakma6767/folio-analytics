@@ -184,7 +184,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           </div>
 
           <p className="mb-3 text-[13px] leading-relaxed text-[#a1a1aa]">
-            MAU CSVs (same 30-day filter as the figures above):{' '}
+            Live MAU CSVs (same calls as the figures above):{' '}
             <a
               href="/mau-discarded.csv"
               className="text-[#10b981] hover:underline"

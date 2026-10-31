@@ -28,6 +28,21 @@ export async function loadWallets(): Promise<WalletUser[]> {
     }));
 }
 
+export async function loadWalletEmails(): Promise<Map<string, string>> {
+  const { data, error } = await getSupabase()
+    .from('users')
+    .select('email,hedera_account_id')
+    .neq('hedera_account_id', '');
+  if (error) throw error;
+  const out = new Map<string, string>();
+  for (const u of data || []) {
+    const accountId = String(u.hedera_account_id || '');
+    if (!accountId.startsWith('0.0.')) continue;
+    out.set(accountId, String(u.email || '').toLowerCase());
+  }
+  return out;
+}
+
 export async function loadUserCounts(): Promise<{ total: number }> {
   const { count: total, error } = await getSupabase()
     .from('users')
