@@ -25,7 +25,7 @@ Required in `.env.local`:
 - `USDC_TOKEN_ID`
 - `HEDERA_OPERATOR_ID` (optional, labels operator rows)
 
-The dashboard unions successful user vault `deposit()` and `release()` across **both** vaults (operator excluded; release attributed to `to`). Immediate repeat calls on each stream are excluded. MAU is unique wallets in 30 days, shown as 1 remaining call vs ≥2.
+The dashboard unions successful user vault `deposit()` and `release()` across **both** vaults (operator excluded; release attributed to `to`). Immediate repeat calls on each stream are excluded. Headline MAU is wallets with ≥2 remaining deposit() or release() calls, mixed — not deposits only.
 
 Live CSVs at the same paths (same 60s cache as the dashboard MAU figures):
 

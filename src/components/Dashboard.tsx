@@ -72,9 +72,9 @@ export function Dashboard({ data }: { data: DashboardData }) {
             Vault analytics
           </h1>
           <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[#a1a1aa]">
-            Unique users are wallets with a successful deposit() or release() on either vault in the
-            last {data.window.days} days ({win}). Immediate repeat calls are not counted. Operator
-            wallet excluded.
+            Headline MAU is wallets with ≥2 remaining successful deposit() or release() calls in the
+            last {data.window.days} days ({win}). One deposit and one release on the same wallet
+            qualifies. Immediate repeat calls are not counted. Operator wallet excluded.
           </p>
         </div>
       </header>
@@ -85,21 +85,24 @@ export function Dashboard({ data }: { data: DashboardData }) {
             Monthly active users · both vaults
           </p>
           <p className="mt-1 text-[13px] text-[#a1a1aa]">
-            Calls counted after excluding repeat calls · 7d {fmtInt(data.mau.d7)} · 14d{' '}
+            Count rule: remaining deposit() + release(), mixed · 7d {fmtInt(data.mau.d7)} · 14d{' '}
             {fmtInt(data.mau.d14)}
           </p>
           <div className="mt-5 grid gap-6 sm:grid-cols-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
-                Monthly active users (≥2 calls)
+                ≥2 deposit() or release()
               </p>
               <p className="mt-1 text-[44px] font-bold tracking-[-0.02em] tabular text-[#10b981]">
                 {fmtInt(data.mau.qualified30)}
               </p>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#f5f5f7]">
+                Not deposits only. A deposit plus a release both count.
+              </p>
             </div>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
-                1 call
+                1 deposit() or release()
               </p>
               <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#f5f5f7]">
                 {fmtInt(data.mau.single30)}
@@ -115,15 +118,15 @@ export function Dashboard({ data }: { data: DashboardData }) {
             </div>
           </div>
 
-          <details className="mt-4">
+          <details className="mt-4" open>
             <summary className={`cursor-pointer text-[13px] font-medium text-[#f5f5f7] ${FOCUS} rounded-sm`}>
               How MAU is counted
             </summary>
             <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-[#a1a1aa]">
-              A wallet counts if it has a successful user deposit() or release() in this window.
-              Release is credited to the receiving wallet. If a wallet’s next call arrives within a
-              few minutes of its previous one, that next call is excluded. The ≥2 figure is wallets
-              with at least two remaining calls.
+              A counted call is a successful user deposit() or a successful user release(). Release
+              is credited to the receiving wallet. The headline number is wallets with at least two
+              remaining calls of either type after dropping immediate repeat calls. Do not recount
+              this as deposits-only.
             </p>
           </details>
 
@@ -135,7 +138,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
               href="/mau-included.csv"
               filename="folio-mau-included.csv"
               title="Included transactions"
-              hint="Calls counted in MAU"
+              hint="deposit() + release() in MAU"
               primary
             />
             <CsvLink
