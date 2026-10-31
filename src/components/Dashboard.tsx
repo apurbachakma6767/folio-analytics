@@ -72,9 +72,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
             Vault analytics
           </h1>
           <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[#a1a1aa]">
-            Headline MAU is wallets with ≥2 remaining successful deposit() or release() calls in the
-            last {data.window.days} days ({win}). One deposit and one release on the same wallet
-            qualifies. Immediate repeat calls are not counted. Operator wallet excluded.
+            Headline MAU uses one closed UTC window: {win}. Today is not in that count. A wallet
+            qualifies with ≥2 remaining successful deposit() or release() calls. Operator excluded.
           </p>
         </div>
       </header>
@@ -85,8 +84,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
             Monthly active users · both vaults
           </p>
           <p className="mt-1 text-[13px] text-[#a1a1aa]">
-            Count rule: remaining deposit() + release(), mixed · 7d {fmtInt(data.mau.d7)} · 14d{' '}
-            {fmtInt(data.mau.d14)}
+            Closed UTC days {win} · remaining deposit() + release(), mixed · 7d {fmtInt(data.mau.d7)}{' '}
+            · 14d {fmtInt(data.mau.d14)}
           </p>
           <div className="mt-5 grid gap-6 sm:grid-cols-3">
             <div>
@@ -118,17 +117,36 @@ export function Dashboard({ data }: { data: DashboardData }) {
             </div>
           </div>
 
-          <details className="mt-4" open>
-            <summary className={`cursor-pointer text-[13px] font-medium text-[#f5f5f7] ${FOCUS} rounded-sm`}>
-              How MAU is counted
-            </summary>
-            <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-[#a1a1aa]">
-              A counted call is a successful user deposit() or a successful user release(). Release
-              is credited to the receiving wallet. The headline number is wallets with at least two
-              remaining calls of either type after dropping immediate repeat calls. Do not recount
-              this as deposits-only.
+          <div className="mt-5 max-w-3xl space-y-3 text-[13px] leading-relaxed text-[#a1a1aa]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#f5f5f7]">
+              Exact count rule
             </p>
-          </details>
+            <ol className="list-decimal space-y-2 pl-5">
+              <li>
+                Window is the last {data.window.days} complete UTC days, {win}. Calls on the current
+                UTC day are excluded so the label and the number use the same days.
+              </li>
+              <li>
+                Collect successful user deposit() (caller wallet) and successful user release()
+                (receiving wallet). Operator is excluded.
+              </li>
+              <li>
+                Sort deposit() by time. Sort release() by time. These are two lists. On each list,
+                drop a call if the gap to the previous call on that same list is 230–290 seconds or
+                450–540 seconds. The previous timestamp still moves forward when a call is dropped.
+              </li>
+              <li>
+                Headline MAU is wallets with at least two remaining calls of either method. This is
+                not deposits-only. One remaining deposit plus one remaining release qualifies.
+              </li>
+            </ol>
+            <p>
+              A deposit a few minutes from a release can stay in. Those calls sit on different
+              lists, so that gap is not an exclusion gap. deposit() is a spend lock; release() is a
+              repay unlock. That pair is two product actions, not a same-method repeat. The excluded
+              CSV is same-method drops only.
+            </p>
+          </div>
 
           <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">
             Downloads
@@ -151,7 +169,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
               href="/mau-discarded.csv"
               filename="folio-mau-discarded.csv"
               title="Excluded transactions"
-              hint="Repeat calls not counted"
+              hint="Same-method 230–290s or 450–540s"
             />
             <CsvLink
               href="/deposit-attempts.csv"
@@ -214,7 +232,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
         <section className="grid gap-6 md:grid-cols-2">
           <ChartCard
             title="Daily unique callers"
-            caption="Successful deposit() or release() per day, repeat calls excluded. Operator excluded."
+            caption="Successful deposit() or release() per day in the closed UTC window, after same-method 230–290s and 450–540s drops. Operator excluded."
             series={[{ label: 'Callers', color: '#10b981', points: data.mau.series }]}
           />
           <ChartCard
