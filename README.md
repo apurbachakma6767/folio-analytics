@@ -25,13 +25,13 @@ Required in `.env.local`:
 - `USDC_TOKEN_ID`
 - `HEDERA_OPERATOR_ID` (optional, labels operator rows)
 
-The dashboard unions successful user vault `deposit()` and `release()` across **both** vaults (operator excluded; release attributed to `to`). Headline MAU uses the last 30 complete UTC days. On each method list, successors 230–290s or 450–540s after the previous call of that same method are dropped. A deposit minutes from a release stays in. ≥2 is mixed deposit()+release(), not deposits only.
+Headline MAU is wallets with ≥2 successful user `deposit()` calls in the last 30 complete UTC days, across both vaults. Operator and vault callers are out. Release is not counted. Time bands are not a filter. Transactions listed as excluded (see `/mau-discarded.csv` and `data/mau-excluded-txs.json`) are removed, then ≥2 is counted on what remains.
 
 Live CSVs at the same paths (same 60s cache as the dashboard MAU figures):
 
-- `/mau-included.csv` — remaining deposit()/release() that count in MAU
+- `/mau-included.csv` — user deposits that count in MAU
 - `/mau-users.csv` — every app wallet and its email
-- `/mau-discarded.csv` — same-method 230–290s or 450–540s drops
+- `/mau-discarded.csv` — excluded transactions (not counted)
 - `/deposit-attempts.csv` — 10–16 Oct outage report
 
 Do not expose this on a public URL without auth — the service role can read the user table.

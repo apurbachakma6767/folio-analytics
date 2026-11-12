@@ -5,14 +5,14 @@ import type { ClassifiedTx, DashboardData, DayPoint, TxTab } from '@/lib/types';
 
 const TABS: { id: TxTab; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'contract', label: 'Contract' },
+  { id: 'contract', label: 'Vault activity' },
   { id: 'spend', label: 'Spends' },
   { id: 'repay', label: 'Repayments' },
   { id: 'collateral', label: 'Collateral' },
 ];
 
 const KIND_LABEL: Record<string, string> = {
-  contract: 'Contract',
+  contract: 'Vault activity',
   spend: 'Spend',
   repay: 'Repay',
   collateral: 'Collateral',
@@ -51,7 +51,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
 
   const visible = rows.slice(0, txLimit);
   const totalShares = data.collateral.reduce((s, c) => s + c.shares, 0);
-  const win = `${data.window.start.slice(0, 10)} → ${data.window.end.slice(0, 10)} UTC`;
+  const win = `${fmtDay(data.window.start)} → ${fmtDay(data.window.end)} UTC`;
   const previous = data.vaults.find((v) => v.role === 'previous');
   const live = data.vaults.find((v) => v.role === 'live');
   const networkLabel = data.network === 'mainnet' ? 'Mainnet' : 'Testnet';
@@ -61,7 +61,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
       <header className="border-b border-white/[0.06]">
         <div className="mx-auto max-w-[1200px] px-6 py-8">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
               Folio · snapshot {fmtSnap(data.fetchedAt)}
             </p>
             <span className="rounded-full bg-[#f59e0b]/12 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#f59e0b]">
@@ -72,36 +72,36 @@ export function Dashboard({ data }: { data: DashboardData }) {
             Vault analytics
           </h1>
           <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[#a1a1aa]">
-            Headline MAU uses one closed UTC window: {win}. Today is not in that count. A wallet
-            qualifies with ≥2 remaining successful deposit() or release() calls. Operator excluded.
+            Who is using Folio, what is locked, and what has been repaid. Figures use closed UTC
+            days only.
           </p>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1200px] space-y-10 px-6 py-10">
-        <section className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.32)] md:p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">
-            Monthly active users · both vaults
-          </p>
-          <p className="mt-1 text-[13px] text-[#a1a1aa]">
-            Closed UTC days {win} · remaining deposit() + release(), mixed · 7d {fmtInt(data.mau.d7)}{' '}
-            · 14d {fmtInt(data.mau.d14)}
-          </p>
+      <main id="main" tabIndex={-1} className="mx-auto max-w-[1200px] space-y-10 px-6 py-10 focus:outline-none">
+        <section
+          aria-labelledby="mau-heading"
+          className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.32)] md:p-6"
+        >
+          <h2 id="mau-heading" className="text-[20px] font-semibold text-[#f5f5f7]">
+            Monthly active users
+          </h2>
+          <p className="mt-1 text-[13px] text-[#a1a1aa]">Both vaults · {win}</p>
           <div className="mt-5 grid gap-6 sm:grid-cols-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
-                ≥2 deposit() or release()
+                Users with 2+ deposits
               </p>
-              <p className="mt-1 text-[44px] font-bold tracking-[-0.02em] tabular text-[#10b981]">
+              <p className="mt-1 text-[44px] font-bold leading-none tracking-[-0.02em] tabular text-[#10b981]">
                 {fmtInt(data.mau.qualified30)}
               </p>
               <p className="mt-2 text-[13px] leading-relaxed text-[#f5f5f7]">
-                Not deposits only. A deposit plus a release both count.
+                People with at least 2 successful deposits in the window.
               </p>
             </div>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
-                1 deposit() or release()
+                One deposit only
               </p>
               <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#f5f5f7]">
                 {fmtInt(data.mau.single30)}
@@ -109,7 +109,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
             </div>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
-                Total unique
+                Any deposit
               </p>
               <p className="mt-1 text-[28px] font-bold tracking-[-0.02em] tabular text-[#f5f5f7]">
                 {fmtInt(data.mau.d30)}
@@ -117,84 +117,69 @@ export function Dashboard({ data }: { data: DashboardData }) {
             </div>
           </div>
 
-          <div className="mt-5 max-w-3xl space-y-3 text-[13px] leading-relaxed text-[#a1a1aa]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#f5f5f7]">
-              Exact count rule
-            </p>
-            <ol className="list-decimal space-y-2 pl-5">
-              <li>
-                Window is the last {data.window.days} complete UTC days, {win}. Calls on the current
-                UTC day are excluded so the label and the number use the same days.
-              </li>
-              <li>
-                Collect successful user deposit() (caller wallet) and successful user release()
-                (receiving wallet). Operator is excluded.
-              </li>
-              <li>
-                Sort deposit() by time. Sort release() by time. These are two lists. On each list,
-                drop a call if the gap to the previous call on that same list is 230–290 seconds or
-                450–540 seconds. The previous timestamp still moves forward when a call is dropped.
-              </li>
-              <li>
-                Headline MAU is wallets with at least two remaining calls of either method. This is
-                not deposits-only. One remaining deposit plus one remaining release qualifies.
-              </li>
-            </ol>
-            <p>
-              A deposit a few minutes from a release can stay in. Those calls sit on different
-              lists, so that gap is not an exclusion gap. Most of those neighbors are different
-              wallets: one user’s deposit next to another user’s release on the same contract
-              timeline. That is two methods sharing a busy hour, not one wallet repeating a call.
-              10–16 Oct is when both methods completed in the same hours after the outage, so
-              cross-method neighbors are common that week and rare on other days. The excluded CSV
-              is same-method drops only.
-            </p>
-          </div>
+          <dl className="mt-6 max-w-3xl divide-y divide-white/[0.06] rounded-xl border border-white/[0.06] bg-[#0c0c0e]/60 text-[13px] leading-relaxed">
+            <RuleRow term="Window">
+              Last {data.window.days} closed UTC days, {win}. Today is not counted.
+            </RuleRow>
+            <RuleRow term="What counts">
+              Successful user deposits in that window. Repayments are not counted.
+            </RuleRow>
+            <RuleRow term="What is excluded">
+              The operator account is left out. {fmtInt(data.mau.excludedCount)} deposits in this
+              window are on the excluded list and are not counted. The Excluded transactions
+              download is that list.
+            </RuleRow>
+            <RuleRow term="Headline number">
+              Users with at least 2 successful deposits in the window (large figure above).
+            </RuleRow>
+          </dl>
 
-          <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">
+          <h3 className="mt-6 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
             Downloads
-          </p>
+          </h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <CsvLink
               href="/mau-included.csv"
               filename="folio-mau-included.csv"
               title="Included transactions"
-              hint="deposit() + release() in MAU"
+              hint="Deposits in MAU"
               primary
             />
             <CsvLink
               href="/mau-users.csv"
               filename="folio-mau-users.csv"
-              title="Wallet list"
-              hint="Every app wallet"
+              title="User wallets"
+              hint="Account IDs match the other downloads"
             />
             <CsvLink
               href="/mau-discarded.csv"
               filename="folio-mau-discarded.csv"
               title="Excluded transactions"
-              hint="Same-method 230–290s or 450–540s"
+              hint="Not counted in MAU"
             />
             <CsvLink
               href="/deposit-attempts.csv"
               filename="folio-deposit-attempts.csv"
-              title="10–16 Oct outage report"
-              hint="Deposit attempt log"
+              title="Deposit attempt log"
+              hint="Every deposit attempt"
             />
           </div>
         </section>
 
         {previous && live ? (
-          <section className="rounded-2xl border border-[#f59e0b]/25 bg-[#f59e0b]/[0.06] p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#f59e0b]">
-              Vault redeployed{data.cutoverDate ? ` · ${data.cutoverDate}` : ''}
-            </p>
+          <section
+            aria-labelledby="vault-heading"
+            className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.32)]"
+          >
+            <h2
+              id="vault-heading"
+              className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]"
+            >
+              Vault upgraded{data.cutoverDate ? ` · ${fmtDay(data.cutoverDate)}` : ''}
+            </h2>
             <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[#f5f5f7]">
-              Hedera cannot replace contract bytecode. The first vault stored the operator as the
-              account-number address, so ECDSA{' '}
-              <span className="font-mono text-[13px]">release()</span> reverted. Live vault {live.id}{' '}
-              was deployed with the ECDSA operator address. Collateral moved over. Remaining user
-              deposit() and release() on {previous.id} still count in the 30-day totals below —
-              history is not reset.
+              Folio moved to a new vault and carried the collateral over. History from the previous
+              vault still counts. The live vault is the current book.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <VaultCard book={previous} />
@@ -207,55 +192,65 @@ export function Dashboard({ data }: { data: DashboardData }) {
               href={live.explorer}
               target="_blank"
               rel="noreferrer"
-              className={`rounded-lg border border-white/[0.08] bg-[#161618] px-4 py-2 font-mono text-[13px] text-[#a1a1aa] transition duration-150 hover:border-[#10b981]/40 hover:text-[#f5f5f7] ${FOCUS}`}
+              className={`rounded-lg border border-white/[0.08] bg-[#161618] px-4 py-2 text-[13px] text-[#a1a1aa] transition duration-150 hover:border-[#10b981]/40 hover:text-[#f5f5f7] ${FOCUS}`}
             >
-              Vault {live.id} ↗
+              View live vault ↗<NewTab />
             </a>
           </section>
         ) : null}
 
         <section className="grid gap-3 md:grid-cols-3">
           <div className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.32)] md:col-span-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">
-              Locked in live vault
-            </p>
+            <h2 className="text-[20px] font-semibold text-[#f5f5f7]">Locked in live vault</h2>
             <p className="mt-1 text-[13px] text-[#a1a1aa]">
-              Equity currently held in {data.vaultId}
-              {previous ? ` after the move from ${previous.id}` : ''}.
+              Equity held in the live vault right now
+              {previous ? ', after the move from the previous vault' : ''}.
             </p>
             <CollateralTray slices={data.collateral} total={totalShares} />
           </div>
           <Stat
             label="Repayments released"
             value={fmtInt(data.notes.solidityReleaseSuccess30)}
-            hint={`${fmtInt(data.notes.onChainRepayTxs)} repayment transactions · ${fmtInt(data.notes.repaid)} notes`}
+            hint={`${fmtInt(data.notes.onChainRepayTxs)} repayment transactions · ${fmtInt(data.notes.repaid)} receipts`}
           />
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">
           <ChartCard
-            title="Daily unique callers"
-            caption="Successful deposit() or release() per day in the closed UTC window, after same-method 230–290s and 450–540s drops. Operator excluded."
-            series={[{ label: 'Callers', color: '#10b981', points: data.mau.series }]}
+            title="Daily unique depositors"
+            caption="Unique people who deposited each day. Excluded deposits and the operator are left out."
+            format="count"
+            series={[{ label: 'Depositors', color: '#10b981', points: data.mau.series }]}
           />
           <ChartCard
             title="Spend volume"
-            caption="USDC advanced versus notes marked repaid. Repayment transactions include successful release() plus vault-to-user transfers."
+            caption="Dollars advanced versus receipts marked repaid, per day."
+            format="usd"
             series={[
-              { label: 'Advanced', color: '#3b82f6', points: data.spendSeries, money: true },
-              { label: 'Notes repaid', color: '#10b981', points: data.repaySeries, money: true },
-              { label: 'Repayment txs', color: '#f59e0b', points: data.repayChainSeries },
+              { label: 'Advanced', color: '#3b82f6', points: data.spendSeries },
+              { label: 'Repaid', color: '#10b981', points: data.repaySeries },
             ]}
           />
+          <div className="md:col-span-2">
+            <ChartCard
+              title="Repayment transactions"
+              caption="Repayment transactions per day. Counts, not dollars."
+              format="count"
+              series={[{ label: 'Repayment transactions', color: '#3b82f6', points: data.repayChainSeries }]}
+            />
+          </div>
         </section>
 
         <section>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
                 Transactions
               </p>
               <h2 className="mt-1 text-[20px] font-semibold text-[#f5f5f7]">Ledger</h2>
+              <p className="mt-1 text-[13px] text-[#a1a1aa]">
+                Times in UTC, same as the window. Account IDs match the CSV downloads.
+              </p>
             </div>
             <input
               value={q}
@@ -279,6 +274,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
                 <button
                   key={t.id}
                   type="button"
+                  aria-pressed={on}
                   onClick={() => {
                     setTab(t.id);
                     setTxLimit(TX_PAGE);
@@ -303,12 +299,12 @@ export function Dashboard({ data }: { data: DashboardData }) {
               onClick={() => setTxLimit((n) => n + TX_PAGE)}
               className={`mt-3 min-h-11 rounded-lg border border-white/[0.08] bg-[#1e1e21] px-4 text-[13px] font-semibold text-[#f5f5f7] transition duration-150 hover:-translate-y-px ${FOCUS}`}
             >
-              Show more ({visible.length} of {fmtInt(rows.length)})
+              Show more ({fmtInt(visible.length)} of {fmtInt(rows.length)})
             </button>
           ) : null}
           <p className="mt-3 text-[13px] text-[#a1a1aa]">
-            Showing {fmtInt(visible.length)} of {fmtInt(data.counts[tab])} · snapshot {fmtSnap(data.fetchedAt)} ·
-            window {win}.
+            Showing {fmtInt(visible.length)} of {fmtInt(rows.length)} · snapshot{' '}
+            {fmtSnap(data.fetchedAt)}.
           </p>
         </section>
       </main>
@@ -354,24 +350,30 @@ function VaultCard({ book }: { book: DashboardData['vaults'][number] }) {
       rel="noreferrer"
       className={`block rounded-xl border border-white/[0.08] bg-[#0c0c0e]/60 p-4 transition duration-200 hover:border-[#10b981]/40 ${FOCUS}`}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">{label}</p>
-      <p className="mt-1 font-mono text-[13px] text-[#10b981]">{book.id} ↗</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">{label}</p>
+      <p className="mt-1 text-[13px] text-[#10b981]">
+        View on explorer ↗<NewTab />
+      </p>
       <dl className="mt-3 grid grid-cols-2 gap-2 text-[13px]">
         <div>
-          <dt className="text-[#a1a1aa]">User deposits</dt>
+          <dt className="text-[#a1a1aa]">Deposits (30d)</dt>
           <dd className="tabular text-[#f5f5f7]">{fmtInt(book.deposits30)}</dd>
         </div>
         <div>
-          <dt className="text-[#a1a1aa]">Unique callers</dt>
+          <dt className="text-[#a1a1aa]">Unique depositors (30d)</dt>
           <dd className="tabular text-[#f5f5f7]">{fmtInt(book.uniqueDepositors30)}</dd>
         </div>
         <div>
-          <dt className="text-[#a1a1aa]">release() success</dt>
+          <dt className="text-[#a1a1aa]">Repayments released (30d)</dt>
           <dd className="tabular text-[#10b981]">{fmtInt(book.releasesSuccess30)}</dd>
         </div>
         <div>
-          <dt className="text-[#a1a1aa]">release() revert</dt>
-          <dd className="tabular text-[#ef4444]">{fmtInt(book.releasesFailed30)}</dd>
+          <dt className="text-[#a1a1aa]">Failed releases (30d)</dt>
+          <dd
+            className={`tabular ${book.releasesFailed30 > 0 ? 'text-[#ef4444]' : 'text-[#f5f5f7]'}`}
+          >
+            {fmtInt(book.releasesFailed30)}
+          </dd>
         </div>
       </dl>
     </a>
@@ -391,7 +393,7 @@ function Stat({
 }) {
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">{label}</p>
       <p
         className={`mt-2 text-[28px] font-bold tracking-[-0.02em] tabular ${
           accent ? 'text-[#10b981]' : 'text-[#f5f5f7]'
@@ -418,13 +420,15 @@ function CollateralTray({
       </div>
     );
   }
-  const palette = ['#10b981', '#34d399', '#3b82f6', '#818cf8', '#f59e0b', '#f472b6', '#22d3ee'];
+  const palette = ['#10b981', '#059669', '#3b82f6', '#a1a1aa', '#f59e0b', '#ef4444', '#71717a'];
   return (
     <div className="mt-3">
       <div className="flex h-10 overflow-hidden rounded-lg">
         {slices.map((s, i) => (
           <div
             key={s.tokenId}
+            role="img"
+            aria-label={`${s.symbol} ${s.shares.toFixed(4)}`}
             title={`${s.symbol} ${s.shares.toFixed(4)}`}
             style={{
               width: `${Math.max(2, (s.shares / total) * 100)}%`,
@@ -456,12 +460,12 @@ function ChartCard({
   title,
   caption,
   series,
-  money,
+  format,
 }: {
   title: string;
   caption: string;
-  series: { label: string; color: string; points: DayPoint[]; money?: boolean }[];
-  money?: boolean;
+  series: { label: string; color: string; points: DayPoint[] }[];
+  format: 'usd' | 'count';
 }) {
   const days = series[0]?.points ?? [];
   const max = Math.max(1, ...series.flatMap((s) => s.points.map((p) => p.value)));
@@ -475,16 +479,26 @@ function ChartCard({
       return `${x},${y}`;
     });
   const lastOf = (points: DayPoint[]) => points[points.length - 1];
-  const fmt = (s: { money?: boolean; points: DayPoint[] }) => {
-    const v = lastOf(s.points)?.value ?? 0;
-    return s.money || money ? usd(v) : fmtInt(v);
-  };
+  const fmtVal = (v: number) => (format === 'usd' ? usd(v) : fmtInt(v));
+  const fmt = (s: { points: DayPoint[] }) => fmtVal(lastOf(s.points)?.value ?? 0);
+  const summary = series
+    .map((s) => {
+      const last = lastOf(s.points);
+      if (!last) return `${s.label}: no data.`;
+      const peak = s.points.reduce((m, p) => (p.value > m.value ? p : m), s.points[0]);
+      const lo = Math.min(...s.points.map((p) => p.value));
+      return `${s.label}: latest ${fmtVal(last.value)} on ${fmtDay(last.day)}, range ${fmtVal(lo)} to ${fmtVal(peak.value)}, peak on ${fmtDay(peak.day)}.`;
+    })
+    .join(' ');
+  const rangeText = days.length
+    ? `${fmtDay(days[0].day)} to ${fmtDay(days[days.length - 1].day)}, ${days.length} days.`
+    : 'No data.';
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5">
+    <div className="rounded-2xl border border-white/[0.06] bg-[#161618] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.32)]">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="text-[20px] font-semibold text-pretty text-[#f5f5f7]">{title}</h3>
+          <h2 className="text-[20px] font-semibold text-pretty text-[#f5f5f7]">{title}</h2>
           <p className="mt-1 text-[13px] text-[#a1a1aa]">{caption}</p>
           {series.length > 1 ? (
             <ul className="mt-3 flex flex-wrap gap-4">
@@ -505,14 +519,17 @@ function ChartCard({
           {series.map((s) => (
             <div key={s.label} className="text-right">
               <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
-                {series.length > 1 ? s.label : 'yesterday'}
+                {series.length > 1 ? s.label : 'Latest'}
               </p>
               <p className="tabular text-[20px] font-semibold text-[#f5f5f7]">{fmt(s)}</p>
             </div>
           ))}
         </div>
       </div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="mt-4 h-40 w-full" role="img" aria-label={title}>
+      <p className="sr-only">
+        {title}. {rangeText} {summary}
+      </p>
+      <svg viewBox={`0 0 ${w} ${h}`} className="mt-4 h-40 w-full" aria-hidden="true" focusable="false">
         {series.map((s) => {
           const pts = toPts(s.points);
           const area = `${pad},${h - pad} ${pts.join(' ')} ${w - pad},${h - pad}`;
@@ -533,10 +550,50 @@ function ChartCard({
       </svg>
       {days.length ? (
         <p className="mt-2 text-[11px] uppercase tracking-[0.06em] text-[#a1a1aa]">
-          {days[0]?.day} – {days[days.length - 1]?.day}
+          {fmtDay(days[0].day)} – {fmtDay(days[days.length - 1].day)}
         </p>
       ) : null}
     </div>
+  );
+}
+
+function ResultText({ tx }: { tx: ClassifiedTx }) {
+  return (
+    <span className={tx.result === 'SUCCESS' ? 'text-[#10b981]' : 'text-[#ef4444]'}>
+      {tx.result === 'SUCCESS' ? 'Success' : tx.result === 'REVERT' ? 'Reverted' : tx.result}
+    </span>
+  );
+}
+
+function KindChips({ tx }: { tx: ClassifiedTx }) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {tx.kinds.map((k) => (
+        <span
+          key={k}
+            className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]"
+        >
+          {KIND_LABEL[k] || k}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function vaultText(tx: ClassifiedTx) {
+  return tx.vaultRole === 'previous' ? 'Previous' : tx.vaultRole === 'live' ? 'Live' : '—';
+}
+
+function ReceiptLink({ tx, className }: { tx: ClassifiedTx; className: string }) {
+  return (
+    <a
+      href={tx.explorerUrl}
+      target="_blank"
+      rel="noreferrer"
+      className={`${className} ${FOCUS}`}
+    >
+      View receipt ↗<NewTab />
+    </a>
   );
 }
 
@@ -549,71 +606,108 @@ function TxTable({ rows }: { rows: ClassifiedTx[] }) {
     );
   }
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-[#161618]">
-      <table className="w-full min-w-[860px] text-left text-[13px]">
-        <thead>
-          <tr className="border-b border-white/[0.06] text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
-            <th className="px-4 py-3">When</th>
-            <th className="px-4 py-3">Type</th>
-            <th className="px-4 py-3">Vault</th>
-            <th className="px-4 py-3" title="Wallet ID — match this to the CSV">
-              Account
-            </th>
-            <th className="px-4 py-3">Detail</th>
-            <th className="px-4 py-3">Result</th>
-            <th className="px-4 py-3 text-right">Explorer</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((tx) => (
-            <tr key={tx.id + tx.consensus} className="border-b border-white/[0.04] last:border-0">
-              <td className="px-4 py-3 whitespace-nowrap tabular text-[#a1a1aa]">{fmtWhen(tx.at)}</td>
-              <td className="px-4 py-3">
-                <div className="flex flex-wrap gap-1">
-                  {tx.kinds.map((k) => (
-                    <span
-                      key={k}
-                      className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.04em] text-[#a1a1aa]"
-                    >
-                      {KIND_LABEL[k] || k}
-                    </span>
-                  ))}
-                </div>
-              </td>
-              <td className="px-4 py-3 font-mono text-[11px] text-[#a1a1aa]">
-                {tx.vaultRole === 'previous' ? 'prev' : tx.vaultRole === 'live' ? 'live' : '—'}
-                {tx.vaultId ? (
-                  <span className="ml-1 text-[#a1a1aa]">{tx.vaultId.replace('0.0.', '')}</span>
-                ) : null}
-              </td>
-              <td className="px-4 py-3 font-mono tabular text-[#f5f5f7]">
-                {tx.user?.accountId || '—'}
-              </td>
-              <td className="px-4 py-3 text-[#a1a1aa]">
-                <span className="text-[#f5f5f7]">{tx.amountLabel || tx.method || tx.name}</span>
-                {tx.symbol ? <span className="ml-2 text-[#a1a1aa]">{tx.symbol}</span> : null}
-              </td>
-              <td className="px-4 py-3">
-                <span className={tx.result === 'SUCCESS' ? 'text-[#10b981]' : 'text-[#ef4444]'}>
-                  {tx.result}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-right">
-                <a
-                  href={tx.explorerUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`inline-flex min-h-11 items-center px-3 font-medium text-[#10b981] underline underline-offset-2 hover:text-[#059669] ${FOCUS}`}
-                >
-                  View ↗
-                </a>
-              </td>
+    <>
+      <ul className="space-y-3 md:hidden">
+        {rows.map((tx) => (
+          <li
+            key={tx.id + tx.consensus}
+            className="rounded-2xl border border-white/[0.06] bg-[#161618] p-4 text-[13px]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <span className="tabular text-[#a1a1aa]">{fmtWhen(tx.at)} UTC</span>
+              <ResultText tx={tx} />
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <KindChips tx={tx} />
+              <span className="text-[#a1a1aa]">{vaultText(tx)} vault</span>
+            </div>
+            <p className="mt-2 text-[#f5f5f7]">
+              {detailLabel(tx)}
+              {tx.symbol ? <span className="ml-2 text-[#a1a1aa]">{tx.symbol}</span> : null}
+            </p>
+            <p className="mt-1 break-all font-mono text-[11px] tabular text-[#a1a1aa]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.06em]">Account · </span>
+              {tx.user?.accountId || '—'}
+            </p>
+            <ReceiptLink
+              tx={tx}
+              className="mt-2 inline-flex min-h-11 items-center font-medium text-[#10b981] underline underline-offset-2 hover:text-[#059669]"
+            />
+          </li>
+        ))}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-2xl border border-white/[0.06] bg-[#161618] md:block">
+        <table className="w-full min-w-[860px] text-left text-[13px]">
+          <thead>
+            <tr className="border-b border-white/[0.06] text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
+              <th scope="col" className="px-4 py-3">When (UTC)</th>
+              <th scope="col" className="px-4 py-3">Type</th>
+              <th scope="col" className="px-4 py-3">Vault</th>
+              <th scope="col" className="px-4 py-3">Account (CSV match)</th>
+              <th scope="col" className="px-4 py-3">Detail</th>
+              <th scope="col" className="px-4 py-3">Result</th>
+              <th scope="col" className="px-4 py-3 text-right">Receipt</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((tx) => (
+              <tr key={tx.id + tx.consensus} className="border-b border-white/[0.04] last:border-0">
+                <td className="px-4 py-3 whitespace-nowrap tabular text-[#a1a1aa]">{fmtWhen(tx.at)}</td>
+                <td className="px-4 py-3">
+                  <KindChips tx={tx} />
+                </td>
+                <td className="px-4 py-3 text-[#a1a1aa]">{vaultText(tx)}</td>
+                <td className="px-4 py-3 font-mono text-[11px] tabular text-[#a1a1aa]">
+                  {tx.user?.accountId || '—'}
+                </td>
+                <td className="px-4 py-3 text-[#a1a1aa]">
+                  <span className="text-[#f5f5f7]">{detailLabel(tx)}</span>
+                  {tx.symbol ? <span className="ml-2 text-[#a1a1aa]">{tx.symbol}</span> : null}
+                </td>
+                <td className="px-4 py-3">
+                  <ResultText tx={tx} />
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <ReceiptLink
+                    tx={tx}
+                    className="inline-flex min-h-11 items-center px-3 font-medium text-[#10b981] underline underline-offset-2 hover:text-[#059669]"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function NewTab() {
+  return <span className="sr-only"> (opens in a new tab)</span>;
+}
+
+function RuleRow({ term, children }: { term: string; children: React.ReactNode }) {
+  return (
+    <div className="grid gap-1 px-4 py-3 sm:grid-cols-[160px_1fr] sm:gap-4">
+      <dt className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">{term}</dt>
+      <dd className="text-[#f5f5f7]">{children}</dd>
     </div>
   );
+}
+
+function detailLabel(tx: ClassifiedTx): string {
+  const raw = (tx.amountLabel || tx.method || tx.name || '').trim();
+  const key = raw.toLowerCase().replace(/\(\)$/, '');
+  const plain: Record<string, string> = {
+    deposit: 'Deposit',
+    release: 'Repayment released',
+    call: 'Vault activity',
+    contractcall: 'Vault activity',
+    cryptotransfer: 'Transfer',
+    tokenassociate: 'Account setup',
+  };
+  return plain[key] ?? raw;
 }
 
 function usd(n: number): string {
@@ -631,24 +725,38 @@ function fmtInt(n: number): string {
 function fmtWhen(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString('en-US', {
+  return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  });
+    hour12: false,
+    timeZone: 'UTC',
+  }).format(d);
+}
+
+function fmtDay(iso: string): string {
+  const d = new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(d);
 }
 
 function fmtSnap(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString('en-US', {
+  const stamp = new Intl.DateTimeFormat('en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
     timeZone: 'UTC',
-    timeZoneName: 'short',
-  });
+  }).format(d);
+  return `${stamp} UTC`;
 }

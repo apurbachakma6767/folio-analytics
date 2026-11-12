@@ -2,8 +2,8 @@
 
 export default function Error({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <div className="mx-auto max-w-lg px-6 py-24 text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#a1a1aa]">
+    <main id="main" tabIndex={-1} className="mx-auto max-w-lg px-6 py-24 text-center focus:outline-none">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a1a1aa]">
         Analytics
       </p>
       <h1 className="mt-2 text-[28px] font-bold tracking-[-0.01em] text-pretty">
@@ -19,6 +19,6 @@ export default function Error({ reset }: { error: Error & { digest?: string }; r
       >
         Try again
       </button>
-    </div>
+    </main>
   );
 }

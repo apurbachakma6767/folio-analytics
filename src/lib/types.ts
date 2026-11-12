@@ -93,10 +93,11 @@ export interface DashboardData {
     d7: number;
     d14: number;
     d30: number;
-    /** Unique wallets with ≥2 remaining user deposit()+release() in 30d after dropping repeat-call successors. */
+    /** Unique wallets with ≥2 remaining user deposits in 30d after excluded transactions are removed. */
     qualified30: number;
-    /** Unique wallets with exactly one remaining user deposit() or release() in 30d after that filter. */
+    /** Unique wallets with exactly one remaining user deposit in 30d after excluded transactions are removed. */
     single30: number;
+    excludedCount: number;
     series: DayPoint[];
   };
   window: {

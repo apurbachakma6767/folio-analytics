@@ -58,5 +58,10 @@ table { border-collapse: collapse; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .skel { animation: none; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  a:hover, button:hover { transform: none !important; }
 }

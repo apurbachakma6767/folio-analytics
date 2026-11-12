@@ -12,6 +12,11 @@ import {
 } from './env';
 import { loadEquityTokens, loadSpendNotes, loadUserCounts, loadWallets } from './db';
 import {
+  exclusionReasonFor,
+  loadExcludedTxIds,
+  normalizeTxId as normalizeExcludedTxId,
+} from './mau-exclusions';
+import {
   fetchAccountTokens,
   fetchAccountTransactions,
   fetchAllContractResults,
@@ -32,10 +37,6 @@ import {
 } from './types';
 
 const WINDOW_DAYS = 30;
-const BAND1_LO = 230;
-const BAND1_HI = 290;
-const BAND2_LO = 450;
-const BAND2_HI = 540;
 /** Operator ECDSA `from` — not the account-num encoding of 0.0.10680786. */
 const OPERATOR_ECDSA = '0x9e65596dd75950f9ab3a28fdd811d4300f8e5164';
 
@@ -52,39 +53,13 @@ export type MauCall = {
 export type MauSource = {
   wallets: WalletUser[];
   kept: MauCall[];
-  dropped: Array<MauCall & { gapS: number }>;
+  dropped: Array<MauCall & { exclusionReason: string }>;
 };
 
 function decodeReleaseTo(params?: string | null): string | null {
   const hex = (params || '').replace(/^0x/i, '').toLowerCase();
   if (hex.slice(0, 8) !== RELEASE_SELECTOR || hex.length < 8 + 128) return null;
   return `0x${hex.slice(8 + 64, 8 + 128).slice(24)}`;
-}
-
-function isTimedGap(gapS: number | null): boolean {
-  if (gapS == null) return false;
-  return (gapS >= BAND1_LO && gapS <= BAND1_HI) || (gapS >= BAND2_LO && gapS <= BAND2_HI);
-}
-
-function partitionPaced<T extends { t: number; key: string }>(
-  rows: T[]
-): { kept: T[]; dropped: Array<T & { gapS: number }> } {
-  const sorted = [...rows].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key));
-  const kept: T[] = [];
-  const dropped: Array<T & { gapS: number }> = [];
-  let prev: number | null = null;
-  for (const row of sorted) {
-    const gap = prev == null ? null : Math.round((row.t - prev) / 1000);
-    prev = row.t;
-    if (isTimedGap(gap)) dropped.push({ ...row, gapS: gap! });
-    else kept.push(row);
-  }
-  return { kept, dropped };
-}
-
-/** Drop immediate repeat-call successors on this stream. */
-export function remainingUserDeposits<T extends { t: number; key: string }>(rows: T[]): T[] {
-  return partitionPaced(rows).kept;
 }
 
 async function loadMauSourceUncached(): Promise<MauSource> {
@@ -95,8 +70,9 @@ async function loadMauSourceUncached(): Promise<MauSource> {
   const win30 = closedUtcWindow(WINDOW_DAYS);
   const since = Math.floor(win30.startMs / 1000);
 
-  const [wallets, ...perVault] = await Promise.all([
+  const [wallets, excluded, ...perVault] = await Promise.all([
     loadWallets(),
+    loadExcludedTxIds(),
     ...vaults.map((v) =>
       fetchAllContractResults(v.id, since).catch(() => [] as MirrorContractResult[])
     ),
@@ -123,42 +99,37 @@ async function loadMauSourceUncached(): Promise<MauSource> {
   }
 
   const deposits: MauCall[] = [];
-  const releases: MauCall[] = [];
   for (const cr of contractResults) {
     if (cr.error_message) continue;
     const sel = selectorOf(cr.function_parameters);
+    if (sel !== DEPOSIT_SELECTOR) continue;
     const t = new Date(tsToIso(cr.timestamp || '')).getTime();
     if (!inWindow(t, win30.startMs, win30.endMs)) continue;
-    const day = dayKey(tsToIso(cr.timestamp || ''));
-    const meta = {
+    const key = callerKey(cr.from || '');
+    if (!key) continue;
+    deposits.push({
       t,
-      day,
+      day: dayKey(tsToIso(cr.timestamp || '')),
       vaultId: cr.vaultId,
       timestamp: cr.timestamp || '',
       transactionId: cr.transaction_id || '',
-    };
-    if (sel === DEPOSIT_SELECTOR) {
-      const key = callerKey(cr.from || '');
-      if (!key) continue;
-      deposits.push({ ...meta, key, method: 'deposit' });
-    } else if (sel === RELEASE_SELECTOR) {
-      const to = decodeReleaseTo(cr.function_parameters);
-      const key = to ? callerKey(to) : null;
-      if (!key) continue;
-      releases.push({ ...meta, key, method: 'release' });
-    }
+      key,
+      method: 'deposit',
+    });
   }
 
-  const dep = partitionPaced(deposits);
-  const rel = partitionPaced(releases);
-  return {
-    wallets,
-    kept: [...dep.kept, ...rel.kept].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key)),
-    dropped: [...dep.dropped, ...rel.dropped].sort((a, b) => a.t - b.t || a.key.localeCompare(b.key)),
-  };
+  const kept: MauCall[] = [];
+  const dropped: Array<MauCall & { exclusionReason: string }> = [];
+  const usedAnchors = new Set<number>();
+  for (const row of deposits.sort((a, b) => a.t - b.t || a.key.localeCompare(b.key))) {
+    const reason = exclusionReasonFor(row, excluded, usedAnchors);
+    if (reason) dropped.push({ ...row, exclusionReason: reason });
+    else kept.push(row);
+  }
+  return { wallets, kept, dropped };
 }
 
-export const getMauSource = unstable_cache(loadMauSourceUncached, ['mau-source-v2'], {
+export const getMauSource = unstable_cache(loadMauSourceUncached, ['mau-source-v5'], {
   revalidate: 60,
 });
 
@@ -207,7 +178,7 @@ function inWindow(t: number, startMs: number, endMs: number): boolean {
 }
 
 export function normalizeTxId(id: string): string {
-  return id.trim().replace('@', '-').replace(/\.(\d+)$/, '-$1');
+  return normalizeExcludedTxId(id);
 }
 
 function selectorOf(params?: string | null): string {
@@ -613,6 +584,7 @@ export async function loadDashboard(): Promise<DashboardData> {
       d30: mauSets.d30.size,
       qualified30: [...interactionCount30.values()].filter((n) => n >= 2).length,
       single30: [...interactionCount30.values()].filter((n) => n === 1).length,
+      excludedCount: mau.dropped.length,
       series: windowDays.map((day) => ({
         day,
         value: mauByDay[day]?.size ?? 0,
