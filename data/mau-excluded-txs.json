@@ -1,460 +1,1230 @@
 {
-  "version": 1,
+  "version": 3,
   "source": "excluded transactions",
   "transactions": [
+    {
+      "transaction_id": "0.0.10828059@1792688202.940901568",
+      "transaction_id_normalized": "0.0.10828059-1792688202-940901568",
+      "account": "0.0.10828059",
+      "at": "2026-10-22T16:56:46.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10825004@1792700371.128162514",
+      "transaction_id_normalized": "0.0.10825004-1792700371-128162514",
+      "account": "0.0.10825004",
+      "at": "2026-10-22T20:19:35.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921395@1792701823.667968503",
+      "transaction_id_normalized": "0.0.10921395-1792701823-667968503",
+      "account": "0.0.10921395",
+      "at": "2026-10-22T20:43:51.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10824502@1792702020.257380964",
+      "transaction_id_normalized": "0.0.10824502-1792702020-257380964",
+      "account": "0.0.10824502",
+      "at": "2026-10-22T20:47:08.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921493@1792702222.118140640",
+      "transaction_id_normalized": "0.0.10921493-1792702222-118140640",
+      "account": "0.0.10921493",
+      "at": "2026-10-22T20:50:27.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921525@1792709071.034355264",
+      "transaction_id_normalized": "0.0.10921525-1792709071-034355264",
+      "account": "0.0.10921525",
+      "at": "2026-10-22T22:44:36.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920473@1792710235.590394133",
+      "transaction_id_normalized": "0.0.10920473-1792710235-590394133",
+      "account": "0.0.10920473",
+      "at": "2026-10-22T23:04:01.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10812655@1792760489.282849540",
+      "transaction_id_normalized": "0.0.10812655-1792760489-282849540",
+      "account": "0.0.10812655",
+      "at": "2026-10-23T13:01:37.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920160@1792772661.071451546",
+      "transaction_id_normalized": "0.0.10920160-1792772661-071451546",
+      "account": "0.0.10920160",
+      "at": "2026-10-23T16:24:29.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10919790@1792775736.316731640",
+      "transaction_id_normalized": "0.0.10919790-1792775736-316731640",
+      "account": "0.0.10919790",
+      "at": "2026-10-23T17:15:40.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920418@1792775928.417457762",
+      "transaction_id_normalized": "0.0.10920418-1792775928-417457762",
+      "account": "0.0.10920418",
+      "at": "2026-10-23T17:18:56.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921484@1792777075.428104387",
+      "transaction_id_normalized": "0.0.10921484-1792777075-428104387",
+      "account": "0.0.10921484",
+      "at": "2026-10-23T17:37:59.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10879141@1792777276.341200116",
+      "transaction_id_normalized": "0.0.10879141-1792777276-341200116",
+      "account": "0.0.10879141",
+      "at": "2026-10-23T17:41:24.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10835041@1792790068.554439588",
+      "transaction_id_normalized": "0.0.10835041-1792790068-554439588",
+      "account": "0.0.10835041",
+      "at": "2026-10-23T21:14:36.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10832122@1792791734.698068313",
+      "transaction_id_normalized": "0.0.10832122-1792791734-698068313",
+      "account": "0.0.10832122",
+      "at": "2026-10-23T21:42:22.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920542@1792792457.745738291",
+      "transaction_id_normalized": "0.0.10920542-1792792457-745738291",
+      "account": "0.0.10920542",
+      "at": "2026-10-23T21:54:24.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10813746@1792792652.535004622",
+      "transaction_id_normalized": "0.0.10813746-1792792652-535004622",
+      "account": "0.0.10813746",
+      "at": "2026-10-23T21:57:41.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10841083@1792793182.844456053",
+      "transaction_id_normalized": "0.0.10841083-1792793182-844456053",
+      "account": "0.0.10841083",
+      "at": "2026-10-23T22:06:30.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10919759@1792846919.596542680",
+      "transaction_id_normalized": "0.0.10919759-1792846919-596542680",
+      "account": "0.0.10919759",
+      "at": "2026-10-24T13:02:07.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10868001@1792861328.654571104",
+      "transaction_id_normalized": "0.0.10868001-1792861328-654571104",
+      "account": "0.0.10868001",
+      "at": "2026-10-24T17:02:08.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10842702@1792938595.625584799",
+      "transaction_id_normalized": "0.0.10842702-1792938595-625584799",
+      "account": "0.0.10842702",
+      "at": "2026-10-25T14:30:00.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10881629@1792938792.536975911",
+      "transaction_id_normalized": "0.0.10881629-1792938792-536975911",
+      "account": "0.0.10881629",
+      "at": "2026-10-25T14:33:18.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10842379@1792943564.881512414",
+      "transaction_id_normalized": "0.0.10842379-1792943564-881512414",
+      "account": "0.0.10842379",
+      "at": "2026-10-25T15:52:51.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10837027@1792961055.502619207",
+      "transaction_id_normalized": "0.0.10837027-1792961055-502619207",
+      "account": "0.0.10837027",
+      "at": "2026-10-25T20:44:21.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10813336@1793019805.526956120",
+      "transaction_id_normalized": "0.0.10813336-1793019805-526956120",
+      "account": "0.0.10813336",
+      "at": "2026-10-26T13:03:33.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10879141@1793022461.414484152",
+      "transaction_id_normalized": "0.0.10879141-1793022461-414484152",
+      "account": "0.0.10879141",
+      "at": "2026-10-26T13:47:47.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10881626@1793022667.475342298",
+      "transaction_id_normalized": "0.0.10881626-1793022667-475342298",
+      "account": "0.0.10881626",
+      "at": "2026-10-26T13:51:13.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10827649@1793023513.529772525",
+      "transaction_id_normalized": "0.0.10827649-1793023513-529772525",
+      "account": "0.0.10827649",
+      "at": "2026-10-26T14:05:18.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10824052@1793024056.020250488",
+      "transaction_id_normalized": "0.0.10824052-1793024056-020250488",
+      "account": "0.0.10824052",
+      "at": "2026-10-26T14:14:20.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921623@1793024252.315923019",
+      "transaction_id_normalized": "0.0.10921623-1793024252-315923019",
+      "account": "0.0.10921623",
+      "at": "2026-10-26T14:17:38.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10811621@1793024457.890073268",
+      "transaction_id_normalized": "0.0.10811621-1793024457-890073268",
+      "account": "0.0.10811621",
+      "at": "2026-10-26T14:21:02.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10826520@1793036935.117578961",
+      "transaction_id_normalized": "0.0.10826520-1793036935-117578961",
+      "account": "0.0.10826520",
+      "at": "2026-10-26T17:49:03.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920147@1793037643.183620115",
+      "transaction_id_normalized": "0.0.10920147-1793037643-183620115",
+      "account": "0.0.10920147",
+      "at": "2026-10-26T18:00:50.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10809825@1793037842.576634029",
+      "transaction_id_normalized": "0.0.10809825-1793037842-576634029",
+      "account": "0.0.10809825",
+      "at": "2026-10-26T18:04:07.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10827393@1793042025.610685255",
+      "transaction_id_normalized": "0.0.10827393-1793042025-610685255",
+      "account": "0.0.10827393",
+      "at": "2026-10-26T19:13:52.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10825014@1793042227.818010156",
+      "transaction_id_normalized": "0.0.10825014-1793042227-818010156",
+      "account": "0.0.10825014",
+      "at": "2026-10-26T19:17:12.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920153@1793042422.952297647",
+      "transaction_id_normalized": "0.0.10920153-1793042422-952297647",
+      "account": "0.0.10920153",
+      "at": "2026-10-26T19:20:26.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10810421@1793044538.225466329",
+      "transaction_id_normalized": "0.0.10810421-1793044538-225466329",
+      "account": "0.0.10810421",
+      "at": "2026-10-26T19:55:45.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10868001@1793048197.119617301",
+      "transaction_id_normalized": "0.0.10868001-1793048197-119617301",
+      "account": "0.0.10868001",
+      "at": "2026-10-26T20:56:42.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10923426@1793049592.620450650",
+      "transaction_id_normalized": "0.0.10923426-1793049592-620450650",
+      "account": "0.0.10923426",
+      "at": "2026-10-26T21:19:56.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10835927@1793049790.278766375",
+      "transaction_id_normalized": "0.0.10835927-1793049790-278766375",
+      "account": "0.0.10835927",
+      "at": "2026-10-26T21:23:15.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10838749@1793050001.170491438",
+      "transaction_id_normalized": "0.0.10838749-1793050001-170491438",
+      "account": "0.0.10838749",
+      "at": "2026-10-26T21:26:44.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10837098@1793052674.352877442",
+      "transaction_id_normalized": "0.0.10837098-1793052674-352877442",
+      "account": "0.0.10837098",
+      "at": "2026-10-26T22:11:18.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10824489@1793099429.977043840",
+      "transaction_id_normalized": "0.0.10824489-1793099429-977043840",
+      "account": "0.0.10824489",
+      "at": "2026-10-27T11:10:36.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10810127@1793100063.516245113",
+      "transaction_id_normalized": "0.0.10810127-1793100063-516245113",
+      "account": "0.0.10810127",
+      "at": "2026-10-27T11:21:09.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10923039@1793101114.170603599",
+      "transaction_id_normalized": "0.0.10923039-1793101114-170603599",
+      "account": "0.0.10923039",
+      "at": "2026-10-27T11:38:42.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920431@1793127742.308249995",
+      "transaction_id_normalized": "0.0.10920431-1793127742-308249995",
+      "account": "0.0.10920431",
+      "at": "2026-10-27T19:02:30.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921018@1793127936.811148466",
+      "transaction_id_normalized": "0.0.10921018-1793127936-811148466",
+      "account": "0.0.10921018",
+      "at": "2026-10-27T19:05:45.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10919790@1793128143.519606186",
+      "transaction_id_normalized": "0.0.10919790-1793128143-519606186",
+      "account": "0.0.10919790",
+      "at": "2026-10-27T19:09:11.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921447@1793128357.667854713",
+      "transaction_id_normalized": "0.0.10921447-1793128357-667854713",
+      "account": "0.0.10921447",
+      "at": "2026-10-27T19:12:41.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10873053@1793130589.125547436",
+      "transaction_id_normalized": "0.0.10873053-1793130589-125547436",
+      "account": "0.0.10873053",
+      "at": "2026-10-27T19:49:53.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920467@1793130784.567705201",
+      "transaction_id_normalized": "0.0.10920467-1793130784-567705201",
+      "account": "0.0.10920467",
+      "at": "2026-10-27T19:53:10.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10809803@1793134049.613775332",
+      "transaction_id_normalized": "0.0.10809803-1793134049-613775332",
+      "account": "0.0.10809803",
+      "at": "2026-10-27T20:47:35.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10826594@1793134827.939073250",
+      "transaction_id_normalized": "0.0.10826594-1793134827-939073250",
+      "account": "0.0.10826594",
+      "at": "2026-10-27T21:00:32.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10838517@1793135792.342451213",
+      "transaction_id_normalized": "0.0.10838517-1793135792-342451213",
+      "account": "0.0.10838517",
+      "at": "2026-10-27T21:16:36.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10826594@1793189024.985740406",
+      "transaction_id_normalized": "0.0.10826594-1793189024-985740406",
+      "account": "0.0.10826594",
+      "at": "2026-10-28T12:03:49.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921376@1793190005.145812449",
+      "transaction_id_normalized": "0.0.10921376-1793190005-145812449",
+      "account": "0.0.10921376",
+      "at": "2026-10-28T12:20:13.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10923429@1793208515.608980362",
+      "transaction_id_normalized": "0.0.10923429-1793208515-608980362",
+      "account": "0.0.10923429",
+      "at": "2026-10-28T17:28:41.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10855362@1793215855.731529522",
+      "transaction_id_normalized": "0.0.10855362-1793215855-731529522",
+      "account": "0.0.10855362",
+      "at": "2026-10-28T19:31:00.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10824165@1793216053.588102316",
+      "transaction_id_normalized": "0.0.10824165-1793216053-588102316",
+      "account": "0.0.10824165",
+      "at": "2026-10-28T19:34:17.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10827433@1793217783.964314670",
+      "transaction_id_normalized": "0.0.10827433-1793217783-964314670",
+      "account": "0.0.10827433",
+      "at": "2026-10-28T20:00:54.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920573@1793218223.278816689",
+      "transaction_id_normalized": "0.0.10920573-1793218223-278816689",
+      "account": "0.0.10920573",
+      "at": "2026-10-28T20:10:28.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10825492@1793226530.162293657",
+      "transaction_id_normalized": "0.0.10825492-1793226530-162293657",
+      "account": "0.0.10825492",
+      "at": "2026-10-28T22:28:57.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10827551@1793278952.618809583",
+      "transaction_id_normalized": "0.0.10827551-1793278952-618809583",
+      "account": "0.0.10827551",
+      "at": "2026-10-29T13:02:36.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10835927@1793279148.276465084",
+      "transaction_id_normalized": "0.0.10835927-1793279148-276465084",
+      "account": "0.0.10835927",
+      "at": "2026-10-29T13:05:52.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921443@1793284304.853022078",
+      "transaction_id_normalized": "0.0.10921443-1793284304-853022078",
+      "account": "0.0.10921443",
+      "at": "2026-10-29T14:31:51.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920143@1793284847.585151780",
+      "transaction_id_normalized": "0.0.10920143-1793284847-585151780",
+      "account": "0.0.10920143",
+      "at": "2026-10-29T14:40:53.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10809716@1793285044.749837220",
+      "transaction_id_normalized": "0.0.10809716-1793285044-749837220",
+      "account": "0.0.10809716",
+      "at": "2026-10-29T14:44:10.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10827466@1793307697.245244954",
+      "transaction_id_normalized": "0.0.10827466-1793307697-245244954",
+      "account": "0.0.10827466",
+      "at": "2026-10-29T21:01:43.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10834800@1793359664.581733027",
+      "transaction_id_normalized": "0.0.10834800-1793359664-581733027",
+      "account": "0.0.10834800",
+      "at": "2026-10-30T11:27:52.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10844133@1793360407.038414781",
+      "transaction_id_normalized": "0.0.10844133-1793360407-038414781",
+      "account": "0.0.10844133",
+      "at": "2026-10-30T11:40:12.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10840782@1793360991.583250207",
+      "transaction_id_normalized": "0.0.10840782-1793360991-583250207",
+      "account": "0.0.10840782",
+      "at": "2026-10-30T11:49:59.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10920783@1793363621.892859636",
+      "transaction_id_normalized": "0.0.10920783-1793363621-892859636",
+      "account": "0.0.10920783",
+      "at": "2026-10-30T12:33:48.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10918026@1793372363.012137975",
+      "transaction_id_normalized": "0.0.10918026-1793372363-012137975",
+      "account": "0.0.10918026",
+      "at": "2026-10-30T14:59:30.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10919831@1793373257.487693052",
+      "transaction_id_normalized": "0.0.10919831-1793373257-487693052",
+      "account": "0.0.10919831",
+      "at": "2026-10-30T15:14:25.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10825492@1793373458.915274647",
+      "transaction_id_normalized": "0.0.10825492-1793373458-915274647",
+      "account": "0.0.10825492",
+      "at": "2026-10-30T15:17:45.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10881626@1793379240.176305972",
+      "transaction_id_normalized": "0.0.10881626-1793379240-176305972",
+      "account": "0.0.10881626",
+      "at": "2026-10-30T16:54:05.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10828704@1793381391.184202295",
+      "transaction_id_normalized": "0.0.10828704-1793381391-184202295",
+      "account": "0.0.10828704",
+      "at": "2026-10-30T17:29:58.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10835892@1793382451.346074361",
+      "transaction_id_normalized": "0.0.10835892-1793382451-346074361",
+      "account": "0.0.10835892",
+      "at": "2026-10-30T17:47:37.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10812589@1793382651.615960828",
+      "transaction_id_normalized": "0.0.10812589-1793382651-615960828",
+      "account": "0.0.10812589",
+      "at": "2026-10-30T17:50:55.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10824393@1793382871.873767601",
+      "transaction_id_normalized": "0.0.10824393-1793382871-873767601",
+      "account": "0.0.10824393",
+      "at": "2026-10-30T17:54:35.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10827659@1793383066.011404438",
+      "transaction_id_normalized": "0.0.10827659-1793383066-011404438",
+      "account": "0.0.10827659",
+      "at": "2026-10-30T17:57:51.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10842402@1793389367.318632000",
+      "transaction_id_normalized": "0.0.10842402-1793389367-318632000",
+      "account": "0.0.10842402",
+      "at": "2026-10-30T19:42:53.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10839452@1793390653.704297871",
+      "transaction_id_normalized": "0.0.10839452-1793390653-704297871",
+      "account": "0.0.10839452",
+      "at": "2026-10-30T20:04:18.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10881616@1793390864.732675660",
+      "transaction_id_normalized": "0.0.10881616-1793390864-732675660",
+      "account": "0.0.10881616",
+      "at": "2026-10-30T20:07:51.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10842520@1793449052.164629440",
+      "transaction_id_normalized": "0.0.10842520-1793449052-164629440",
+      "account": "0.0.10842520",
+      "at": "2026-10-31T12:17:39.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921447@1793471711.202321321",
+      "transaction_id_normalized": "0.0.10921447-1793471711-202321321",
+      "account": "0.0.10921447",
+      "at": "2026-10-31T18:35:16.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10923364@1793551817.602356065",
+      "transaction_id_normalized": "0.0.10923364-1793551817-602356065",
+      "account": "0.0.10923364",
+      "at": "2026-11-01T16:50:25.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10918096@1793633728.864723009",
+      "transaction_id_normalized": "0.0.10918096-1793633728-864723009",
+      "account": "0.0.10918096",
+      "at": "2026-11-02T15:35:36.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10809852@1793633924.878909894",
+      "transaction_id_normalized": "0.0.10809852-1793633924-878909894",
+      "account": "0.0.10809852",
+      "at": "2026-11-02T15:38:53.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10921456@1793634122.682010680",
+      "transaction_id_normalized": "0.0.10921456-1793634122-682010680",
+      "account": "0.0.10921456",
+      "at": "2026-11-02T15:42:07.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10826516@1793634319.820975498",
+      "transaction_id_normalized": "0.0.10826516-1793634319-820975498",
+      "account": "0.0.10826516",
+      "at": "2026-11-02T15:45:26.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10824489@1793637403.566324128",
+      "transaction_id_normalized": "0.0.10824489-1793637403-566324128",
+      "account": "0.0.10824489",
+      "at": "2026-11-02T16:36:49.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10826583@1793719521.548209364",
+      "transaction_id_normalized": "0.0.10826583-1793719521-548209364",
+      "account": "0.0.10826583",
+      "at": "2026-11-03T15:25:29.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10919701@1793732300.669004811",
+      "transaction_id_normalized": "0.0.10919701-1793732300-669004811",
+      "account": "0.0.10919701",
+      "at": "2026-11-03T18:58:27.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10923136@1793735841.102401566",
+      "transaction_id_normalized": "0.0.10923136-1793735841-102401566",
+      "account": "0.0.10923136",
+      "at": "2026-11-03T19:57:27.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10839025@1793736045.956282792",
+      "transaction_id_normalized": "0.0.10839025-1793736045-956282792",
+      "account": "0.0.10839025",
+      "at": "2026-11-03T20:00:49.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10825007@1793796465.354269215",
+      "transaction_id_normalized": "0.0.10825007-1793796465-354269215",
+      "account": "0.0.10825007",
+      "at": "2026-11-04T12:47:53.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10923136@1793798777.754572258",
+      "transaction_id_normalized": "0.0.10923136-1793798777-754572258",
+      "account": "0.0.10923136",
+      "at": "2026-11-04T13:26:24.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10868066@1793798987.573199595",
+      "transaction_id_normalized": "0.0.10868066-1793798987-573199595",
+      "account": "0.0.10868066",
+      "at": "2026-11-04T13:29:52.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10834812@1793799790.770568295",
+      "transaction_id_normalized": "0.0.10834812-1793799790-770568295",
+      "account": "0.0.10834812",
+      "at": "2026-11-04T13:43:19.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10817483@1793801050.512195733",
+      "transaction_id_normalized": "0.0.10817483-1793801050-512195733",
+      "account": "0.0.10817483",
+      "at": "2026-11-04T14:04:15.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10811825@1793814461.987367717",
+      "transaction_id_normalized": "0.0.10811825-1793814461-987367717",
+      "account": "0.0.10811825",
+      "at": "2026-11-04T17:47:46.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10828622@1793819371.722019833",
+      "transaction_id_normalized": "0.0.10828622-1793819371-722019833",
+      "account": "0.0.10828622",
+      "at": "2026-11-04T19:09:36.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10810049@1793899130.743024516",
+      "transaction_id_normalized": "0.0.10810049-1793899130-743024516",
+      "account": "0.0.10810049",
+      "at": "2026-11-05T17:18:56.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10824062@1793899337.776325346",
+      "transaction_id_normalized": "0.0.10824062-1793899337-776325346",
+      "account": "0.0.10824062",
+      "at": "2026-11-05T17:22:25.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10919701@1793902664.378905238",
+      "transaction_id_normalized": "0.0.10919701-1793902664-378905238",
+      "account": "0.0.10919701",
+      "at": "2026-11-05T18:17:53.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10827393@1794268248.879626765",
+      "transaction_id_normalized": "0.0.10827393-1794268248-879626765",
+      "account": "0.0.10827393",
+      "at": "2026-11-09T23:50:54.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10825516@1794268790.202392589",
+      "transaction_id_normalized": "0.0.10825516-1794268790-202392589",
+      "account": "0.0.10825516",
+      "at": "2026-11-09T23:59:56.000Z",
+      "reason": "excluded transaction"
+    },
     {
       "transaction_id": "0.0.10920236@1794327936.842811829",
       "transaction_id_normalized": "0.0.10920236-1794327936-842811829",
       "account": "0.0.10920236",
-      "at": "2026-11-10T16:25:54.270Z",
+      "at": "2026-11-10T16:25:44.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10842953@1794328060.947208791",
       "transaction_id_normalized": "0.0.10842953-1794328060-947208791",
       "account": "0.0.10842953",
-      "at": "2026-11-10T16:27:59.145Z",
+      "at": "2026-11-10T16:27:48.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10813895@1794328293.416330353",
       "transaction_id_normalized": "0.0.10813895-1794328293-416330353",
       "account": "0.0.10813895",
-      "at": "2026-11-10T16:31:47.697Z",
+      "at": "2026-11-10T16:31:37.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10824473@1794328508.000214670",
       "transaction_id_normalized": "0.0.10824473-1794328508-000214670",
       "account": "0.0.10824473",
-      "at": "2026-11-10T16:35:25.823Z",
+      "at": "2026-11-10T16:35:16.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10812755@1794329028.684365221",
       "transaction_id_normalized": "0.0.10812755-1794329028-684365221",
       "account": "0.0.10812755",
-      "at": "2026-11-10T16:44:02.307Z",
+      "at": "2026-11-10T16:43:53.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10828704@1794329227.247236887",
       "transaction_id_normalized": "0.0.10828704-1794329227-247236887",
       "account": "0.0.10828704",
-      "at": "2026-11-10T16:47:25.157Z",
+      "at": "2026-11-10T16:47:13.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10921398@1794329373.870527106",
       "transaction_id_normalized": "0.0.10921398-1794329373-870527106",
       "account": "0.0.10921398",
-      "at": "2026-11-10T16:49:48.833Z",
+      "at": "2026-11-10T16:49:40.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10919960@1794329503.909335504",
       "transaction_id_normalized": "0.0.10919960-1794329503-909335504",
       "account": "0.0.10919960",
-      "at": "2026-11-10T16:51:57.816Z",
+      "at": "2026-11-10T16:51:48.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10923409@1794331129.505782631",
       "transaction_id_normalized": "0.0.10923409-1794331129-505782631",
       "account": "0.0.10923409",
-      "at": "2026-11-10T17:19:05.358Z",
+      "at": "2026-11-10T17:18:53.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10813723@1794331406.188845258",
       "transaction_id_normalized": "0.0.10813723-1794331406-188845258",
       "account": "0.0.10813723",
-      "at": "2026-11-10T17:23:42.182Z",
+      "at": "2026-11-10T17:23:31.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10920165@1794331520.684462261",
       "transaction_id_normalized": "0.0.10920165-1794331520-684462261",
       "account": "0.0.10920165",
-      "at": "2026-11-10T17:25:34.125Z",
+      "at": "2026-11-10T17:25:25.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10825005@1794331628.276471100",
       "transaction_id_normalized": "0.0.10825005-1794331628-276471100",
       "account": "0.0.10825005",
-      "at": "2026-11-10T17:27:23.819Z",
+      "at": "2026-11-10T17:27:14.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10879590@1794332111.380607666",
       "transaction_id_normalized": "0.0.10879590-1794332111-380607666",
       "account": "0.0.10879590",
-      "at": "2026-11-10T17:35:26.972Z",
+      "at": "2026-11-10T17:35:15.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10921923@1794332244.758593311",
       "transaction_id_normalized": "0.0.10921923-1794332244-758593311",
       "account": "0.0.10921923",
-      "at": "2026-11-10T17:37:38.547Z",
+      "at": "2026-11-10T17:37:30.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10811309@1794332606.513478547",
       "transaction_id_normalized": "0.0.10811309-1794332606-513478547",
       "account": "0.0.10811309",
-      "at": "2026-11-10T17:43:40.130Z",
+      "at": "2026-11-10T17:43:32.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10921429@1794332734.989243507",
       "transaction_id_normalized": "0.0.10921429-1794332734-989243507",
       "account": "0.0.10921429",
-      "at": "2026-11-10T17:45:46.935Z",
+      "at": "2026-11-10T17:45:38.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10824345@1794333049.784183311",
       "transaction_id_normalized": "0.0.10824345-1794333049-784183311",
       "account": "0.0.10824345",
-      "at": "2026-11-10T17:51:02.897Z",
+      "at": "2026-11-10T17:50:54.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10826505@1794333375.867347086",
       "transaction_id_normalized": "0.0.10826505-1794333375-867347086",
       "account": "0.0.10826505",
-      "at": "2026-11-10T17:56:32.202Z",
+      "at": "2026-11-10T17:56:23.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10832185@1794333495.029429459",
       "transaction_id_normalized": "0.0.10832185-1794333495-029429459",
       "account": "0.0.10832185",
-      "at": "2026-11-10T17:58:27.763Z",
+      "at": "2026-11-10T17:58:19.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10827466@1794333610.618191366",
       "transaction_id_normalized": "0.0.10827466-1794333610-618191366",
       "account": "0.0.10827466",
-      "at": "2026-11-10T18:00:26.872Z",
+      "at": "2026-11-10T18:00:17.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10826517@1794333719.667821763",
       "transaction_id_normalized": "0.0.10826517-1794333719-667821763",
       "account": "0.0.10826517",
-      "at": "2026-11-10T18:02:17.600Z",
+      "at": "2026-11-10T18:02:05.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10920473@1794333863.016716371",
       "transaction_id_normalized": "0.0.10920473-1794333863-016716371",
       "account": "0.0.10920473",
-      "at": "2026-11-10T18:04:38.098Z",
+      "at": "2026-11-10T18:04:28.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10843631@1794333970.065141268",
       "transaction_id_normalized": "0.0.10843631-1794333970-065141268",
       "account": "0.0.10843631",
-      "at": "2026-11-10T18:06:23.410Z",
+      "at": "2026-11-10T18:06:15.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10828059@1794334078.436175456",
       "transaction_id_normalized": "0.0.10828059-1794334078-436175456",
       "account": "0.0.10828059",
-      "at": "2026-11-10T18:08:15.577Z",
+      "at": "2026-11-10T18:08:02.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10876972@1794334203.465889376",
       "transaction_id_normalized": "0.0.10876972-1794334203-465889376",
       "account": "0.0.10876972",
-      "at": "2026-11-10T18:10:18.186Z",
+      "at": "2026-11-10T18:10:09.000Z",
+      "reason": "excluded transaction"
+    },
+    {
+      "transaction_id": "0.0.10839729@1794340010.416622672",
+      "transaction_id_normalized": "0.0.10839729-1794340010-416622672",
+      "account": "0.0.10839729",
+      "at": "2026-11-10T19:46:57.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10834800@1794347768.583463314",
       "transaction_id_normalized": "0.0.10834800-1794347768-583463314",
       "account": "0.0.10834800",
-      "at": "2026-11-10T21:56:21.377Z",
+      "at": "2026-11-10T21:56:12.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10826920@1794347874.526803029",
       "transaction_id_normalized": "0.0.10826920-1794347874-526803029",
       "account": "0.0.10826920",
-      "at": "2026-11-10T21:58:07.966Z",
+      "at": "2026-11-10T21:57:59.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10827393@1794347989.801052847",
       "transaction_id_normalized": "0.0.10827393-1794347989-801052847",
       "account": "0.0.10827393",
-      "at": "2026-11-10T22:00:02.038Z",
+      "at": "2026-11-10T21:59:53.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10810470@1794348191.332543719",
       "transaction_id_normalized": "0.0.10810470-1794348191-332543719",
       "account": "0.0.10810470",
-      "at": "2026-11-10T22:03:30.357Z",
+      "at": "2026-11-10T22:03:19.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10827426@1794348377.502910850",
       "transaction_id_normalized": "0.0.10827426-1794348377-502910850",
       "account": "0.0.10827426",
-      "at": "2026-11-10T22:06:29.518Z",
+      "at": "2026-11-10T22:06:21.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10825004@1794348489.522371509",
       "transaction_id_normalized": "0.0.10825004-1794348489-522371509",
       "account": "0.0.10825004",
-      "at": "2026-11-10T22:08:24.018Z",
+      "at": "2026-11-10T22:08:15.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10921501@1794348592.124137569",
       "transaction_id_normalized": "0.0.10921501-1794348592-124137569",
       "account": "0.0.10921501",
-      "at": "2026-11-10T22:10:09.220Z",
+      "at": "2026-11-10T22:10:00.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10834787@1794348702.469343603",
       "transaction_id_normalized": "0.0.10834787-1794348702-469343603",
       "account": "0.0.10834787",
-      "at": "2026-11-10T22:11:55.848Z",
+      "at": "2026-11-10T22:11:46.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10827621@1794348931.495318236",
       "transaction_id_normalized": "0.0.10827621-1794348931-495318236",
       "account": "0.0.10827621",
-      "at": "2026-11-10T22:15:44.872Z",
+      "at": "2026-11-10T22:15:36.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10881872@1794409155.173419349",
       "transaction_id_normalized": "0.0.10881872-1794409155-173419349",
       "account": "0.0.10881872",
-      "at": "2026-11-11T14:59:29.448Z",
+      "at": "2026-11-11T14:59:21.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10828518@1794409272.436875999",
       "transaction_id_normalized": "0.0.10828518-1794409272-436875999",
       "account": "0.0.10828518",
-      "at": "2026-11-11T15:01:24.474Z",
+      "at": "2026-11-11T15:01:17.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10920690@1794409543.999764557",
       "transaction_id_normalized": "0.0.10920690-1794409543-999764557",
       "account": "0.0.10920690",
-      "at": "2026-11-11T15:05:59.192Z",
+      "at": "2026-11-11T15:05:51.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10811970@1794409792.940989057",
       "transaction_id_normalized": "0.0.10811970-1794409792-940989057",
       "account": "0.0.10811970",
-      "at": "2026-11-11T15:10:10.333Z",
+      "at": "2026-11-11T15:10:00.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10842649@1794409980.660091720",
       "transaction_id_normalized": "0.0.10842649-1794409980-660091720",
       "account": "0.0.10842649",
-      "at": "2026-11-11T15:13:14.571Z",
+      "at": "2026-11-11T15:13:07.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10827560@1794410095.265488587",
       "transaction_id_normalized": "0.0.10827560-1794410095-265488587",
       "account": "0.0.10827560",
-      "at": "2026-11-11T15:15:13.923Z",
+      "at": "2026-11-11T15:15:02.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10811259@1794410205.172260268",
       "transaction_id_normalized": "0.0.10811259-1794410205-172260268",
       "account": "0.0.10811259",
-      "at": "2026-11-11T15:16:57.718Z",
+      "at": "2026-11-11T15:16:49.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10834812@1794410450.984304876",
       "transaction_id_normalized": "0.0.10834812-1794410450-984304876",
       "account": "0.0.10834812",
-      "at": "2026-11-11T15:21:05.208Z",
+      "at": "2026-11-11T15:20:56.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10919831@1794410567.716174318",
       "transaction_id_normalized": "0.0.10919831-1794410567-716174318",
       "account": "0.0.10919831",
-      "at": "2026-11-11T15:22:59.915Z",
+      "at": "2026-11-11T15:22:52.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10824160@1794410750.648389502",
       "transaction_id_normalized": "0.0.10824160-1794410750-648389502",
       "account": "0.0.10824160",
-      "at": "2026-11-11T15:26:06.700Z",
+      "at": "2026-11-11T15:25:58.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10920657@1794423060.535676549",
       "transaction_id_normalized": "0.0.10920657-1794423060-535676549",
       "account": "0.0.10920657",
-      "at": "2026-11-11T18:51:13.362Z",
+      "at": "2026-11-11T18:51:04.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10826594@1794423388.379779075",
       "transaction_id_normalized": "0.0.10826594-1794423388-379779075",
       "account": "0.0.10826594",
-      "at": "2026-11-11T18:56:43.210Z",
+      "at": "2026-11-11T18:56:34.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10826508@1794423506.956669165",
       "transaction_id_normalized": "0.0.10826508-1794423506-956669165",
       "account": "0.0.10826508",
-      "at": "2026-11-11T18:58:42.917Z",
+      "at": "2026-11-11T18:58:34.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10826709@1794423846.454137160",
       "transaction_id_normalized": "0.0.10826709-1794423846-454137160",
       "account": "0.0.10826709",
-      "at": "2026-11-11T19:04:20.669Z",
+      "at": "2026-11-11T19:04:12.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10824453@1794423950.292773545",
       "transaction_id_normalized": "0.0.10824453-1794423950-292773545",
       "account": "0.0.10824453",
-      "at": "2026-11-11T19:06:06.096Z",
+      "at": "2026-11-11T19:05:58.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10826128@1794424109.449822211",
       "transaction_id_normalized": "0.0.10826128-1794424109-449822211",
       "account": "0.0.10826128",
-      "at": "2026-11-11T19:08:45.466Z",
+      "at": "2026-11-11T19:08:36.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10828656@1794424229.403015931",
       "transaction_id_normalized": "0.0.10828656-1794424229-403015931",
       "account": "0.0.10828656",
-      "at": "2026-11-11T19:10:44.112Z",
+      "at": "2026-11-11T19:10:36.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10817281@1794424366.016844832",
       "transaction_id_normalized": "0.0.10817281-1794424366-016844832",
       "account": "0.0.10817281",
-      "at": "2026-11-11T19:12:59.648Z",
+      "at": "2026-11-11T19:12:53.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10867950@1794424486.248109250",
       "transaction_id_normalized": "0.0.10867950-1794424486-248109250",
       "account": "0.0.10867950",
-      "at": "2026-11-11T19:15:01.223Z",
+      "at": "2026-11-11T19:14:52.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10923480@1794424593.416963783",
       "transaction_id_normalized": "0.0.10923480-1794424593-416963783",
       "account": "0.0.10923480",
-      "at": "2026-11-11T19:16:46.270Z",
+      "at": "2026-11-11T19:16:37.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10811859@1794432117.981808004",
       "transaction_id_normalized": "0.0.10811859-1794432117-981808004",
       "account": "0.0.10811859",
-      "at": "2026-11-11T21:22:12.078Z",
+      "at": "2026-11-11T21:22:04.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10840161@1794432235.601210854",
       "transaction_id_normalized": "0.0.10840161-1794432235-601210854",
       "account": "0.0.10840161",
-      "at": "2026-11-11T21:24:08.281Z",
+      "at": "2026-11-11T21:24:00.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10832068@1794432447.591849895",
       "transaction_id_normalized": "0.0.10832068-1794432447-591849895",
       "account": "0.0.10832068",
-      "at": "2026-11-11T21:27:41.886Z",
+      "at": "2026-11-11T21:27:33.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10840782@1794432565.514558081",
       "transaction_id_normalized": "0.0.10840782-1794432565-514558081",
       "account": "0.0.10840782",
-      "at": "2026-11-11T21:29:36.733Z",
+      "at": "2026-11-11T21:29:29.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10920719@1794432678.562824920",
       "transaction_id_normalized": "0.0.10920719-1794432678-562824920",
       "account": "0.0.10920719",
-      "at": "2026-11-11T21:31:32.446Z",
+      "at": "2026-11-11T21:31:25.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10810531@1794432873.466904483",
       "transaction_id_normalized": "0.0.10810531-1794432873-466904483",
       "account": "0.0.10810531",
-      "at": "2026-11-11T21:34:47.262Z",
+      "at": "2026-11-11T21:34:39.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10810057@1794432979.853999197",
       "transaction_id_normalized": "0.0.10810057-1794432979-853999197",
       "account": "0.0.10810057",
-      "at": "2026-11-11T21:36:31.621Z",
+      "at": "2026-11-11T21:36:23.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10810485@1794433079.968333906",
       "transaction_id_normalized": "0.0.10810485-1794433079-968333906",
       "account": "0.0.10810485",
-      "at": "2026-11-11T21:38:15.069Z",
+      "at": "2026-11-11T21:38:07.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10812060@1794433183.135759249",
       "transaction_id_normalized": "0.0.10812060-1794433183-135759249",
       "account": "0.0.10812060",
-      "at": "2026-11-11T21:39:58.830Z",
+      "at": "2026-11-11T21:39:50.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10824444@1794433781.068009568",
       "transaction_id_normalized": "0.0.10824444-1794433781-068009568",
       "account": "0.0.10824444",
-      "at": "2026-11-11T21:49:52.377Z",
+      "at": "2026-11-11T21:49:45.000Z",
       "reason": "excluded transaction"
     },
     {
       "transaction_id": "0.0.10826556@1794433894.417913627",
       "transaction_id_normalized": "0.0.10826556-1794433894-417913627",
       "account": "0.0.10826556",
-      "at": "2026-11-11T21:51:49.198Z",
+      "at": "2026-11-11T21:51:41.000Z",
       "reason": "excluded transaction"
     }
   ]

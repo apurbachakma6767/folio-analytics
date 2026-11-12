@@ -129,7 +129,7 @@ async function loadMauSourceUncached(): Promise<MauSource> {
   return { wallets, kept, dropped };
 }
 
-export const getMauSource = unstable_cache(loadMauSourceUncached, ['mau-source-v5'], {
+export const getMauSource = unstable_cache(loadMauSourceUncached, ['mau-source-v9'], {
   revalidate: 60,
 });
 
